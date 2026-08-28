@@ -93,9 +93,11 @@
 
 ## 9. 未確定事項・今後詰める点
 
-- フロントエンドのビルド有無（バンドラーなしの素のHTML/CSS/JSか、Vite導入か）
-- Workers側でルーティング用のライブラリ（Honoなど）を使うか、素の実装で進めるか
-- 地図表示ライブラリの選定（Leaflet / MapLibre GL JS など。無料枠内で収まることを選定基準にする）
-- OSMデータの取得方法（Overpass APIを直接叩くか、別の手段を検討するか。同上、無料枠内で収まることを選定基準にする）
+- OSMデータの取得方法（Overpass APIを直接叩くか、別の手段を検討するか。無料枠内で収まることを選定基準にする）
 - D1導入の要否・タイミング（KVは導入確定。詳細は docs/decisions/260828-infra-cloudflare-kv.md 参照）
 - プロジェクト名の最終確定（現在の仮称: `touring-gacha`）
+
+決定済み（詳細は docs/decisions/260828-infra-cloudflare-kv.md 参照）:
+- フロントエンドのビルド有無 → バンドラーなし
+- Workers側のルーティングライブラリ → Hono採用
+- 地図表示ライブラリ → MapLibre GL JS、タイル提供元 → MapTiler無料プラン

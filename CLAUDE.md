@@ -30,18 +30,16 @@
 
 ## 運用・インフラ方針
 
-- Cloudflare Workers + Workers Static Assets + Workers KV（すべて無料枠）で運用する
+- Cloudflare Workers（Hono） + Workers Static Assets（バンドラーなし） + Workers KV（すべて無料枠）で運用する
 - 無料枠は未来永劫でなくてよい。自分ひとりが使う規模で維持できれば十分とする
 - 無料枠を超えた場合は自動課金ではなく、サービス利用不可（停止）になることを許容する
 - Overpass APIのレート制限を吸収するため、KV導入は「要否を検討する」段階を経ず、探索結果のキャッシュ用途として前提にする
+- 地図ライブラリはMapLibre GL JS、タイル提供元はMapTiler無料プラン（月10万マップロードで自動課金なく停止）を採用する
 - 詳細な経緯は docs/decisions/260828-infra-cloudflare-kv.md を参照
 
 ## 現状の未確定事項
 
-- フロントエンドのビルドツール有無
-- Workers側のルーティング/フレームワーク（素実装 or Hono等）
-- 地図表示ライブラリの選定（Leaflet / MapLibre GL JS 等。無料枠内で収まることを選定基準にする）
-- OSMデータ取得方法（Overpass API 等。同上、無料枠内で収まることを選定基準にする）
+- OSMデータ取得方法（Overpass APIを直接叩くか、別の手段を検討するか。無料枠内で収まることを選定基準にする）
 - D1導入の要否（KVは運用・インフラ方針のとおり導入前提で確定済み）
 
 ## コマンド
