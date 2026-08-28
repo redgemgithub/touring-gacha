@@ -1,0 +1,63 @@
+# touring-gacha 機能↔ファイル対応表
+
+## この文書について
+
+「何を触ればどの機能に影響するか」を見失わないための対応表。機能追加・変更のたびに更新する。実装順序・フェーズの根拠は [docs/roadmap.md](./roadmap.md) を、要件の詳細は [docs/requirements.md](./requirements.md) を参照。
+
+状態の凡例: 済＝実装済み（Phase 1）／予定＝該当フェーズで実装予定・未着手
+
+## バックエンド（`src/`）
+
+| 機能 | 対応ファイル | 状態 | 対応フェーズ |
+|---|---|---|---|
+| ヘルスチェック | `src/index.ts` | 済 | Phase 1 |
+| ルーティング全体の起点 | `src/index.ts` | 済 | Phase 1 |
+| 共有の型定義（Env, Candidate等） | `src/types.ts` | 済 | Phase 1 |
+| MapTilerキー配布API（`GET /api/config`） | `src/routes/config.ts` | 済 | Phase 1 |
+| 目的地検索API（`POST /api/destinations/search`） | `src/routes/destinations.ts` | 済（「店」のみ対応） | Phase 1／Phase 4で「店以外」分岐を追加 |
+| 「店」の探索ロジック（Overpassタグ検索: amenity/shop） | `src/lib/overpass.ts` | 済 | Phase 1 |
+| 「店以外」の探索ロジック（交差点・行き止まり判定、峠/展望等） | 未作成（新規ファイルを追加予定） | 予定 | Phase 4 |
+| Overpassへのリクエスト送信・エラー処理（remark検知含む） | `src/lib/overpass.ts` | 済 | Phase 1 |
+| 高速道路100m除外（点と線分の距離計算） | `src/lib/highway-filter.ts`, `src/lib/geo.ts`（`distanceToSegmentMeters`/`distanceToPolylineMeters`） | 済 | Phase 1（「店以外」でも共通利用予定） |
+| 停車できる場所の条件判定 | 未作成 | 予定 | Phase 4 |
+| Overpass要素→Candidate変換・住所組み立て | `src/lib/candidate.ts` | 済 | Phase 1 |
+| 座標バケット化（キャッシュキー用）・距離／方角計算 | `src/lib/geo.ts`（`bucketCoordinate`/`haversineDistanceKm`/`bearingLabel`） | 済 | Phase 1 |
+| KVキャッシュ（検索結果の保存・再抽選用） | `src/lib/cache.ts` | 済 | Phase 1 |
+| 周辺POI取得API | 未作成（新規ルート、または`destinations.ts`の拡張を検討） | 予定 | Phase 3 |
+| KVバインディング設定 | `wrangler.jsonc` | 済 | Phase 1 |
+| 本番シークレット設定（MAPTILER_API_KEY） | `wrangler secret put`（ファイルなし、CLI操作） | 未実施 | Phase 2 |
+
+## フロントエンド（`public/`）
+
+| 機能 | 対応ファイル | 状態 | 対応フェーズ |
+|---|---|---|---|
+| ページ骨格（条件設定・結果・コピーモーダルの3ブロック） | `public/index.html` | 済 | Phase 1 |
+| 見た目全般（ダークテーマ） | `public/styles.css` | 済 | Phase 1 |
+| エントリポイント・画面切り替え | `public/js/app.js` | 済 | Phase 1 |
+| 状態管理（最小pub/subストア） | `public/js/state.js` | 済 | Phase 1 |
+| API呼び出し（config取得・検索） | `public/js/api.js` | 済 | Phase 1 |
+| 検索実行の共通ロジック（初回・再抽選） | `public/js/search.js` | 済 | Phase 1 |
+| 現在地取得・距離／方角の表示整形（クライアント側） | `public/js/geo.js` | 済 | Phase 1 |
+| 条件設定画面（GPS・探索範囲・店タイプ選択） | `public/js/views/condition.js` | 済（「店」のみ。「店以外」選択肢は未実装） | Phase 1／Phase 4で拡張 |
+| 停車できる場所の条件UI | `public/js/views/condition.js`（拡張予定） | 予定 | Phase 4 |
+| 結果地図画面（下部シート、決める/別の場所/ナビ用情報ボタン） | `public/js/views/result.js` | 済 | Phase 1 |
+| 地図描画（MapLibre初期化、ピン、破線ルート） | `public/js/components/map.js` | 済 | Phase 1 |
+| ナビ用情報コピーモーダル | `public/js/views/copy-modal.js` | 済 | Phase 1 |
+| 周辺情報展開画面（POI一覧・地図フォーカス連動） | 未作成（新規view） | 予定 | Phase 3 |
+
+## インフラ・設定・ドキュメント
+
+| 機能 | 対応ファイル | 状態 |
+|---|---|---|
+| 依存パッケージ定義 | `package.json` | 済 |
+| TypeScript設定 | `tsconfig.json` | 済 |
+| Workers設定（KVバインディング、Static Assets） | `wrangler.jsonc` | 済 |
+| ローカル環境変数テンプレート | `.dev.vars.example` | 済 |
+| インフラ方針・技術選定の経緯 | `docs/decisions/260828-infra-cloudflare-kv.md` | 済 |
+| 全体の実装順序 | `docs/roadmap.md` | 済 |
+| 各フェーズの計画・実行記録 | `docs/plans/*.md` | Phase 1分のみ済 |
+
+## 更新ルール
+
+- 機能を追加・変更・削除したら、対応する行をこの表にも反映する
+- 新しいフェーズに着手する際、そのフェーズで新規作成予定のファイルが確定したら「未作成」の行を更新する

@@ -5,5 +5,12 @@
   "compatibility_date": "2026-08-28",
   "assets": {
     "directory": "./public"
-  }
+  },
+  "kv_namespaces": [
+    {
+      "binding": "CACHE",
+      "id": "a0a886d9b6714920b88f9fde7bbe431a",
+      "preview_id": "39aa33af925f4526845ed3baa6a0ced8"
+    }
+  ]
 }

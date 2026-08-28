@@ -9,8 +9,8 @@
 
 ## 構成
 
-- `src/` : Cloudflare Workers側（API・目的地探索ロジック、TypeScript）
-- `public/` : Static Assets配信対象。現状バンドラーなしの素のHTML/CSS/JSで、1枚のindex.htmlを画面状態の切り替えで構成する想定
+- `src/` : Cloudflare Workers側（API・目的地探索ロジック、TypeScript、Hono）
+- `public/` : Static Assets配信対象。バンドラーなしの素のHTML/CSS/JS（ES Modules）。1枚のindex.htmlを画面状態の切り替えで構成する。MapLibre GL JSはCDNからESモジュールとしてimportする（v6以降はUMD/グローバル公開ビルドが廃止されたため、`<script src>`ではなく`import`を使うこと）
 - `docs/` : 要件・画面イメージ・設計判断の記録
 
 ## 作業の進め方（計画・実行記録）
@@ -23,6 +23,7 @@
 ## 守るべきドメインルール
 
 - 高速道路・高規格道路は候補から常時除外し、そこから100m以内の候補地点も除外する
+  - 実装上の注意: Overpass QLの`around.SET`による2集合間の近接フィルタ（例: `nwr.cand(around.hw:100)`）は計算コストが非常に高く、`shop=*`のような件数の多いカテゴリではタイムアウトする（実測済み）。高速道路除外は「候補検索」と「高速道路ジオメトリ取得（`out geom`）」を別々のOverpass文にして両方取得し、アプリ側（Workers）で点と線分の距離計算により除外する（`src/lib/highway-filter.ts`, `src/lib/geo.ts`の`distanceToPolylineMeters`）
 - 候補地点は交差点など地点として区別できる場所に限定し、直線路途中の道端・行き止まりは除外する
 - 目的地種別は「店（食事・休憩／買い物・その他）」と「店以外（停車場所の要否を選択、地図データで判断可能な場合のみ条件化）」を切り替えられるようにする
 - ナビ連携は情報のコピーで十分。ナビアプリへの直接連携は不要
@@ -39,8 +40,10 @@
 
 ## 現状の未確定事項
 
-- OSMデータ取得方法（Overpass APIを直接叩くか、別の手段を検討するか。無料枠内で収まることを選定基準にする）
 - D1導入の要否（KVは運用・インフラ方針のとおり導入前提で確定済み）
+- 目的地種別「店以外」の交差点・行き止まり判定ロジック（Phase 2以降）
+
+OSMデータ取得方法はOverpass API直接利用で決定・実装済み（`src/lib/overpass.ts`）。
 
 ## コマンド
 

@@ -4,9 +4,113 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>touring-gacha</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.6.0/dist/maplibre-gl.css" />
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <h1>touring-gacha（準備中）</h1>
-  <p>Static Assets配信の疎通確認用プレースホルダーです。</p>
+  <main id="app">
+    <section id="view-condition">
+      <header class="app-header">
+        <h1>ツーリング目的地ガチャ</h1>
+        <p class="subtitle">今日はどこまで走る？</p>
+      </header>
+
+      <div class="card">
+        <div class="location-icon" aria-hidden="true"></div>
+        <div class="location-info">
+          <p class="label">現在地</p>
+          <p class="status" id="location-status">取得中…</p>
+          <p class="coords" id="location-coords"></p>
+        </div>
+      </div>
+
+      <div class="field">
+        <p class="field-label">探索範囲</p>
+        <div class="chip-group" id="radius-chips">
+          <button type="button" class="chip" data-radius="10">10km</button>
+          <button type="button" class="chip" data-radius="30">30km</button>
+          <button type="button" class="chip active" data-radius="50">50km</button>
+          <button type="button" class="chip" data-radius="100">100km</button>
+        </div>
+        <input type="range" id="radius-slider" min="0" max="3" step="1" value="2" />
+      </div>
+
+      <div class="field">
+        <p class="field-label">目的地の種類（店）</p>
+        <p class="field-note">店以外の目的地は今後対応予定です</p>
+        <div class="chip-group two-col" id="category-chips">
+          <button type="button" class="chip-card active" data-category="food_rest">
+            食事・休憩
+          </button>
+          <button type="button" class="chip-card" data-category="shopping_other">
+            買い物・その他
+          </button>
+        </div>
+      </div>
+
+      <button type="button" id="search-button" class="primary-button" disabled>
+        → 目的地をさがす
+      </button>
+      <p class="error-text" id="condition-error" hidden></p>
+    </section>
+
+    <section id="view-result" hidden>
+      <header class="result-topbar">
+        <button type="button" id="back-button" aria-label="戻る">←</button>
+        <span id="radius-label"></span>
+        <button type="button" id="recenter-button" aria-label="現在地に戻す">◎</button>
+      </header>
+      <div id="map"></div>
+      <p id="result-status" class="result-status" hidden></p>
+      <div id="result-sheet" class="sheet" hidden>
+        <p class="sheet-title" id="candidate-name"></p>
+        <p class="sheet-coords" id="candidate-coords"></p>
+        <p class="sheet-distance" id="candidate-distance"></p>
+        <button type="button" id="decide-button" class="primary-button">
+          ✓ この場所に決める
+        </button>
+        <div class="sheet-actions">
+          <button type="button" id="reroll-button">↻ 別の場所</button>
+          <button type="button" id="copy-open-button">⧉ ナビ用情報</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="copy-modal" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>ナビ用情報をコピー</h2>
+          <button type="button" id="copy-close-button" aria-label="閉じる">×</button>
+        </div>
+        <div class="copy-row">
+          <div>
+            <p class="copy-label">緯度・経度</p>
+            <p class="copy-value" id="copy-latlon"></p>
+          </div>
+          <button type="button" class="copy-button" data-copy-target="latlon">コピー</button>
+        </div>
+        <div class="copy-row">
+          <div>
+            <p class="copy-label">名称</p>
+            <p class="copy-value" id="copy-name"></p>
+          </div>
+          <button type="button" class="copy-button" data-copy-target="name">コピー</button>
+        </div>
+        <div class="copy-row" id="copy-address-row" hidden>
+          <div>
+            <p class="copy-label">住所</p>
+            <p class="copy-value" id="copy-address"></p>
+          </div>
+          <button type="button" class="copy-button" data-copy-target="address">コピー</button>
+        </div>
+        <button type="button" id="copy-all-button" class="primary-button">
+          ⧉ すべてコピー
+        </button>
+        <p class="modal-note">コピーした情報をお使いのナビアプリに貼り付けてください</p>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/js/app.js"></script>
 </body>
 </html>
