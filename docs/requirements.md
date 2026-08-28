@@ -13,7 +13,8 @@
 - 主なリソース
   - Cloudflare Workers
   - Workers Static Assets
-- 必要になった場合のみKVやD1を追加する
+- Workers KVは前提として導入する（Overpass APIのレート制限を吸収するためのキャッシュ用途、無料枠内で運用）
+- D1は必要になった場合のみ追加を検討する
 - 地図・道路データはOpenStreetMap系を利用する想定とする
 
 ## 3. 基本条件
@@ -94,7 +95,7 @@
 
 - フロントエンドのビルド有無（バンドラーなしの素のHTML/CSS/JSか、Vite導入か）
 - Workers側でルーティング用のライブラリ（Honoなど）を使うか、素の実装で進めるか
-- 地図表示ライブラリの選定（Leaflet / MapLibre GL JS など）
-- OSMデータの取得方法（Overpass APIを直接叩くか、別の手段を検討するか）
-- KV/D1導入の要否・タイミング
+- 地図表示ライブラリの選定（Leaflet / MapLibre GL JS など。無料枠内で収まることを選定基準にする）
+- OSMデータの取得方法（Overpass APIを直接叩くか、別の手段を検討するか。同上、無料枠内で収まることを選定基準にする）
+- D1導入の要否・タイミング（KVは導入確定。詳細は docs/decisions/260828-infra-cloudflare-kv.md 参照）
 - プロジェクト名の最終確定（現在の仮称: `touring-gacha`）

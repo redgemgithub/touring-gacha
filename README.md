@@ -4,13 +4,14 @@
 
 ## 現状のステータス
 
-要件定義・画面イメージの検討段階です。実装はこれから着手します。
+プロジェクト雛形作成済み（`wrangler dev` で疎通確認済み）。機能実装はこれから着手します。
 
 ## 想定スタック
 
-- Cloudflare Workers + Workers Static Assets
+- Cloudflare Workers（[Hono](https://github.com/honojs/hono)採用） + Workers Static Assets（バンドラーなし）
 - 地図・道路データ: OpenStreetMap系
-- 必要になった場合のみ Cloudflare KV / D1 を追加
+- Workers KVを前提として導入（Overpass APIのレート制限を吸収するキャッシュ用途）。D1は必要になった場合のみ追加
+- 詳細な経緯: [docs/decisions/260828-infra-cloudflare-kv.md](./docs/decisions/260828-infra-cloudflare-kv.md)
 
 ## ドキュメント
 
@@ -62,4 +63,11 @@ touring-gacha/
 
 ## セットアップ
 
-準備中です（Claude Codeでの実装開始後に追記します）。
+```
+npm install
+npm run dev       # ローカル開発サーバー起動（wrangler dev）
+npm run typecheck # 型チェック
+npm run deploy    # Cloudflareへデプロイ
+```
+
+初回のみ `npx wrangler login` でCloudflareアカウントの認証が必要です。

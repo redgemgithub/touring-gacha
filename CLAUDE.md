@@ -28,14 +28,26 @@
 - ナビ連携は情報のコピーで十分。ナビアプリへの直接連携は不要
 - 周辺情報一覧は画面遷移せず、地図確認の流れの中で1操作で表示できるようにする
 
+## 運用・インフラ方針
+
+- Cloudflare Workers + Workers Static Assets + Workers KV（すべて無料枠）で運用する
+- 無料枠は未来永劫でなくてよい。自分ひとりが使う規模で維持できれば十分とする
+- 無料枠を超えた場合は自動課金ではなく、サービス利用不可（停止）になることを許容する
+- Overpass APIのレート制限を吸収するため、KV導入は「要否を検討する」段階を経ず、探索結果のキャッシュ用途として前提にする
+- 詳細な経緯は docs/decisions/260828-infra-cloudflare-kv.md を参照
+
 ## 現状の未確定事項
 
 - フロントエンドのビルドツール有無
 - Workers側のルーティング/フレームワーク（素実装 or Hono等）
-- 地図表示ライブラリの選定（Leaflet / MapLibre GL JS 等）
-- OSMデータ取得方法（Overpass API 等）
-- KV/D1導入の要否
+- 地図表示ライブラリの選定（Leaflet / MapLibre GL JS 等。無料枠内で収まることを選定基準にする）
+- OSMデータ取得方法（Overpass API 等。同上、無料枠内で収まることを選定基準にする）
+- D1導入の要否（KVは運用・インフラ方針のとおり導入前提で確定済み）
 
 ## コマンド
 
-（プロジェクト雛形作成後にここへ実際のコマンドを追記する。例: `wrangler dev` / `wrangler deploy` 等）
+- `npm install` : 依存パッケージインストール
+- `npm run dev` : ローカル開発サーバー起動（`wrangler dev`）
+- `npm run typecheck` : 型チェック（`tsc --noEmit`）
+- `npm run deploy` : Cloudflareへデプロイ（`wrangler deploy`）
+- 初回のみ `npx wrangler login` でCloudflareアカウントの認証が必要
