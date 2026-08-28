@@ -1,4 +1,6 @@
 # ローカル開発用のシークレット・環境変数テンプレート。
 # コピーして .dev.vars を作成し、値を設定する（.dev.vars 自体はgit管理対象外）。
-#
-# 現時点では必要な変数なし。地図タイル提供元の選定後、必要になれば追記する。
+
+# MapTiler Cloud APIキー（MapLibre GL JSでの地図タイル取得用）
+# https://cloud.maptiler.com/account/keys/ で取得する
+MAPTILER_API_KEY=
