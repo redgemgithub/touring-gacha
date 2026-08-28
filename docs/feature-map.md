@@ -4,7 +4,7 @@
 
 「何を触ればどの機能に影響するか」を見失わないための対応表。機能追加・変更のたびに更新する。実装順序・フェーズの根拠は [docs/roadmap.md](./roadmap.md) を、要件の詳細は [docs/requirements.md](./requirements.md) を参照。
 
-状態の凡例: 済＝実装済み（Phase 1）／予定＝該当フェーズで実装予定・未着手
+状態の凡例: 済＝実装済み／予定＝該当フェーズで実装予定・未着手
 
 ## バックエンド（`src/`）
 
@@ -14,10 +14,12 @@
 | ルーティング全体の起点 | `src/index.ts` | 済 | Phase 1 |
 | 共有の型定義（Env, Candidate等） | `src/types.ts` | 済 | Phase 1 |
 | MapTilerキー配布API（`GET /api/config`） | `src/routes/config.ts` | 済 | Phase 1 |
-| 目的地検索API（`POST /api/destinations/search`） | `src/routes/destinations.ts` | 済（「店」のみ対応） | Phase 1／Phase 4で「店以外」分岐を追加 |
-| 「店」の探索ロジック（Overpassタグ検索: amenity/shop） | `src/lib/overpass.ts` | 済 | Phase 1 |
+| 検索キャッシュ確認・Overpassクエリ生成API（`POST /api/destinations/prepare`） | `src/routes/destinations.ts` | 済（「店」のみ対応） | Phase 1で実装、Phase 2で分割／Phase 4で「店以外」分岐を追加 |
+| Overpass結果の受け取り・解釈・キャッシュ保存API（`POST /api/destinations/process`） | `src/routes/destinations.ts` | 済 | Phase 2 |
+| Overpassへの実際の問い合わせ（ブラウザから直接fetch） | `public/js/api.js`（`fetchOverpassDirect`） | 済 | Phase 2（Cloudflare Workers共有IPの制限を回避するため、Phase1時点のサーバー側fetchから変更。[decision](./decisions/260829-overpass-client-side-fetch.md)） |
+| 「店」の探索ロジック（Overpassタグ検索: amenity/shop、クエリ組み立て） | `src/lib/overpass.ts` | 済 | Phase 1 |
 | 「店以外」の探索ロジック（交差点・行き止まり判定、峠/展望等） | 未作成（新規ファイルを追加予定） | 予定 | Phase 4 |
-| Overpassへのリクエスト送信・エラー処理（remark検知含む） | `src/lib/overpass.ts` | 済 | Phase 1 |
+| Overpass応答の検証・エラー処理（remark検知含む） | `src/lib/overpass.ts`（`parseOverpassResponse`） | 済 | Phase 1で実装、Phase 2でサーバー側fetch実行部分を廃止し検証ロジックのみ残す形に整理 |
 | 高速道路100m除外（点と線分の距離計算） | `src/lib/highway-filter.ts`, `src/lib/geo.ts`（`distanceToSegmentMeters`/`distanceToPolylineMeters`） | 済 | Phase 1（「店以外」でも共通利用予定） |
 | 停車できる場所の条件判定 | 未作成 | 予定 | Phase 4 |
 | Overpass要素→Candidate変換・住所組み立て | `src/lib/candidate.ts` | 済 | Phase 1 |
@@ -25,7 +27,7 @@
 | KVキャッシュ（検索結果の保存・再抽選用） | `src/lib/cache.ts` | 済 | Phase 1 |
 | 周辺POI取得API | 未作成（新規ルート、または`destinations.ts`の拡張を検討） | 予定 | Phase 3 |
 | KVバインディング設定 | `wrangler.jsonc` | 済 | Phase 1 |
-| 本番シークレット設定（MAPTILER_API_KEY） | `wrangler secret put`（ファイルなし、CLI操作） | 未実施 | Phase 2 |
+| 本番シークレット設定（MAPTILER_API_KEY） | `wrangler secret put`（ファイルなし、CLI操作） | 済 | Phase 2 |
 
 ## フロントエンド（`public/`）
 
@@ -35,8 +37,8 @@
 | 見た目全般（ダークテーマ） | `public/styles.css` | 済 | Phase 1 |
 | エントリポイント・画面切り替え | `public/js/app.js` | 済 | Phase 1 |
 | 状態管理（最小pub/subストア） | `public/js/state.js` | 済 | Phase 1 |
-| API呼び出し（config取得・検索） | `public/js/api.js` | 済 | Phase 1 |
-| 検索実行の共通ロジック（初回・再抽選） | `public/js/search.js` | 済 | Phase 1 |
+| API呼び出し（config取得・prepare/process・Overpass直接fetch） | `public/js/api.js` | 済 | Phase 1で新設、Phase 2でOverpass直接fetchを追加 |
+| 検索実行の共通ロジック（初回・再抽選、prepare→(Overpass直接fetch)→process） | `public/js/search.js` | 済 | Phase 1で新設、Phase 2で改修 |
 | 現在地取得・距離／方角の表示整形（クライアント側） | `public/js/geo.js` | 済 | Phase 1 |
 | 条件設定画面（GPS・探索範囲・店タイプ選択） | `public/js/views/condition.js` | 済（「店」のみ。「店以外」選択肢は未実装） | Phase 1／Phase 4で拡張 |
 | 停車できる場所の条件UI | `public/js/views/condition.js`（拡張予定） | 予定 | Phase 4 |
@@ -54,8 +56,9 @@
 | Workers設定（KVバインディング、Static Assets） | `wrangler.jsonc` | 済 |
 | ローカル環境変数テンプレート | `.dev.vars.example` | 済 |
 | インフラ方針・技術選定の経緯 | `docs/decisions/260828-infra-cloudflare-kv.md` | 済 |
+| Overpassをブラウザ直接fetchにした経緯 | `docs/decisions/260829-overpass-client-side-fetch.md` | 済 |
 | 全体の実装順序 | `docs/roadmap.md` | 済 |
-| 各フェーズの計画・実行記録 | `docs/plans/*.md` | Phase 1分のみ済 |
+| 各フェーズの計画・実行記録 | `docs/plans/*.md` | Phase 1・Phase 2分済 |
 
 ## 更新ルール
 

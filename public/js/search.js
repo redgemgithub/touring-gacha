@@ -1,4 +1,4 @@
-import { searchDestinations } from "./api.js";
+import { prepareSearch, fetchOverpassDirect, processSearch } from "./api.js";
 
 export async function performSearch(store, { isReroll = false } = {}) {
   const state = store.getState();
@@ -11,14 +11,29 @@ export async function performSearch(store, { isReroll = false } = {}) {
     decided: false,
   });
 
+  const excludeIds = isReroll ? state.seenIds : [];
+
   try {
-    const result = await searchDestinations({
+    const prepared = await prepareSearch({
       lat: state.location.lat,
       lon: state.location.lon,
       radiusKm: state.radiusKm,
       category: state.category,
-      excludeIds: isReroll ? state.seenIds : [],
+      excludeIds,
     });
+
+    let result;
+    if (prepared.status === "done") {
+      result = prepared;
+    } else {
+      const overpassResponse = await fetchOverpassDirect(prepared.endpoint, prepared.query);
+      result = await processSearch({
+        cacheKey: prepared.cacheKey,
+        category: state.category,
+        excludeIds,
+        overpassResponse,
+      });
+    }
 
     const seenIds = isReroll ? [...state.seenIds] : [];
     if (result.picked) seenIds.push(result.picked.id);

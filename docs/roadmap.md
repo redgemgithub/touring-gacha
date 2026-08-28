@@ -16,12 +16,14 @@
 - 対応する要件: docs/requirements.md 3(基本条件のうち高速道路除外)・4.1(店)・6(ナビ連携はコピーで十分)
 - 記録: [docs/plans/260828-163014-phase1-店タイプ検索実装.md](./plans/260828-163014-phase1-店タイプ検索実装.md)（計画全文・実行結果・変更履歴を記録済み）
 
-### Phase 2（案）: 初回デプロイ・本番運用の疎通確認 — 未着手
+### Phase 2: 初回デプロイ・本番運用の疎通確認 — 完了（2026-08-29）
 
 `wrangler secret put`によるMAPTILER_API_KEYの本番設定、初回`wrangler deploy`、本番workers.dev URLの確定、MapTilerのAllowed HTTP Originsへの本番URL追加、実機（スマートフォン等）での動作確認。
 
 - なぜここに置くか（提案理由）: Phase 1で「店」タイプの基本機能はローカルで実際に使えるレベルまで動いている。新機能を追加する前に、一度実際のCloudflare本番環境・実際のドメイン・実機GPSで通しの動作を確認しておくことで、後続フェーズでの手戻りリスクを下げられると考えた
 - 対応する要件: docs/requirements.md 2(運用環境)
+- 実機確認の過程で、Cloudflare Workersの共有送信元IPがOverpass API側で制限を受けていることが判明し、Overpassへの問い合わせをサーバー側からブラウザ側の直接fetchへ変更する設計変更を行った（[docs/decisions/260829-overpass-client-side-fetch.md](./decisions/260829-overpass-client-side-fetch.md)）。この変更により実機での動作を確認できた
+- 記録: [docs/plans/260828-183112-phase2-初回デプロイ疎通確認.md](./plans/260828-183112-phase2-初回デプロイ疎通確認.md)、[docs/plans/260829-082814-overpassクライアント直接fetch移行.md](./plans/260829-082814-overpassクライアント直接fetch移行.md)
 
 ### Phase 3（案）: 周辺情報表示（周辺情報展開画面） — 未着手
 

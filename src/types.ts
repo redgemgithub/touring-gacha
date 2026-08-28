@@ -14,7 +14,7 @@ export interface Candidate {
   address: string | null;
 }
 
-export interface SearchRequestBody {
+export interface PrepareRequestBody {
   lat: number;
   lon: number;
   radiusKm: number;
@@ -27,4 +27,20 @@ export interface SearchResponseBody {
   candidates: Candidate[];
   cacheHit: boolean;
   searchedAt: string;
+}
+
+export type PrepareResponseBody =
+  | ({ status: "done" } & SearchResponseBody)
+  | {
+      status: "need_fetch";
+      query: string;
+      endpoint: string;
+      cacheKey: string;
+    };
+
+export interface ProcessRequestBody {
+  cacheKey: string;
+  category: ShopCategory;
+  excludeIds: string[];
+  overpassResponse: unknown;
 }

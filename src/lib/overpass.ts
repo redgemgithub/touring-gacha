@@ -1,7 +1,6 @@
 import type { ShopCategory } from "../types";
 
-const OVERPASS_ENDPOINT = "https://overpass-api.de/api/interpreter";
-const USER_AGENT = "touring-gacha/0.1 (personal use)";
+export const OVERPASS_ENDPOINT = "https://overpass-api.de/api/interpreter";
 const EXCLUDED_HIGHWAY_TYPES = ["motorway", "motorway_link", "trunk", "trunk_link"];
 export const HIGHWAY_EXCLUSION_BUFFER_M = 100;
 const HIGHWAY_SEARCH_BUFFER_M = 200;
@@ -24,7 +23,7 @@ export interface OverpassElement {
   tags?: Record<string, string>;
 }
 
-interface OverpassResponse {
+export interface OverpassRawResponse {
   elements: OverpassElement[];
   remark?: string;
 }
@@ -33,7 +32,11 @@ interface OverpassResponse {
  * 候補（店）検索と高速道路ジオメトリ取得を別々のOverpass文にする。
  * around.hw のような2集合間の近接フィルタはOverpass側の計算コストが非常に高く、
  * shop=* のような件数の多いカテゴリでは実際にタイムアウトすることを確認済み。
- * 高速道路除外はここでは行わず、取得したジオメトリを使ってアプリ側（Workers）で計算する。
+ * 高速道路除外はここでは行わず、取得したジオメトリを使ってアプリ側で計算する。
+ *
+ * このクエリはCloudflare Workers（サーバー）ではなくブラウザから直接Overpassへ
+ * 送信される（docs/decisions/260829-overpass-client-side-fetch.md）。ここではクエリ
+ * 文字列の組み立てのみ行い、実際のfetchはクライアント側が行う。
  */
 export function buildOverpassQuery(
   lat: number,
@@ -59,44 +62,28 @@ export function buildOverpassQuery(
   );
 }
 
-export class OverpassRateLimitedError extends Error {
-  constructor(public status: number) {
-    super(`Overpass API rate limited or unavailable (status ${status})`);
-  }
-}
-
 export class OverpassError extends Error {
-  constructor(
-    public status: number,
-    message?: string,
-  ) {
-    super(message ?? `Overpass API error (status ${status})`);
+  constructor(message: string) {
+    super(message);
   }
 }
 
-export async function fetchOverpass(query: string): Promise<OverpassResponse> {
-  const res = await fetch(OVERPASS_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": USER_AGENT,
-    },
-    body: "data=" + encodeURIComponent(query),
-  });
-
-  if (res.status === 429 || res.status >= 500) {
-    throw new OverpassRateLimitedError(res.status);
+/**
+ * クライアントから届いた「Overpassの生レスポンスのはず」の値を検証する。
+ * Overpassはクエリのランタイムエラー（タイムアウト等）でもHTTP 200を返し、
+ * elementsが空のまま remark にエラー内容を入れてくることがある。見逃すと
+ * 「候補0件」という誤った結果を静かにキャッシュしてしまうため、明示的に弾く。
+ */
+export function parseOverpassResponse(raw: unknown): OverpassRawResponse {
+  if (typeof raw !== "object" || raw === null || !("elements" in raw)) {
+    throw new OverpassError("invalid Overpass response shape");
   }
-  if (!res.ok) {
-    throw new OverpassError(res.status);
+  const response = raw as OverpassRawResponse;
+  if (!Array.isArray(response.elements)) {
+    throw new OverpassError("invalid Overpass response shape");
   }
-
-  const json = (await res.json()) as OverpassResponse;
-  // Overpassはクエリのランタイムエラー（タイムアウト等）でもHTTP 200を返し、
-  // elementsが空のまま remark にエラー内容を入れてくることがある。見逃すと
-  // 「候補0件」という誤った結果を静かにキャッシュしてしまうため、明示的に弾く。
-  if (json.remark) {
-    throw new OverpassError(res.status, json.remark);
+  if (response.remark) {
+    throw new OverpassError(response.remark);
   }
-  return json;
+  return response;
 }
