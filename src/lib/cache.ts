@@ -10,8 +10,11 @@ export function buildCacheKey(
   radiusKm: number,
   category: ShopCategory,
 ): string {
+  // v2: 探索範囲を「円内」から「帯」に変更した際にバージョンを上げた
+  // （docs/decisions/260829-cache-key-versioning.md）。以後、候補の絞り込み
+  // ロジックを変更する際は必ずこのバージョンを上げること。
   const bucket = bucketCoordinate(lat, lon, radiusKm);
-  return `ov:v1:${category}:${radiusKm}:${bucket.lat.toFixed(4)}:${bucket.lon.toFixed(4)}`;
+  return `ov:v2:${category}:${radiusKm}:${bucket.lat.toFixed(4)}:${bucket.lon.toFixed(4)}`;
 }
 
 export async function getCachedCandidates(
