@@ -15,7 +15,7 @@ const FOOD_REST_AMENITIES = new Set([
 
 export function classifyPoiKind(tags: Record<string, string>): PoiKind {
   const amenity = tags.amenity;
-  if (amenity === "parking") return "parking";
+  if (amenity === "parking" || amenity === "motorcycle_parking") return "parking";
   if (amenity === "place_of_worship") return "shrine_temple";
   if (amenity === "vending_machine") return "vending_machine";
   if (amenity === "fuel") return "fuel";

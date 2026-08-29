@@ -16,7 +16,10 @@ function isValidPrepareRequest(body: unknown): body is NearbyPrepareRequestBody 
   if (typeof body !== "object" || body === null) return false;
   const b = body as Record<string, unknown>;
   return (
-    typeof b.lat === "number" && typeof b.lon === "number" && typeof b.excludeId === "string"
+    typeof b.lat === "number" &&
+    typeof b.lon === "number" &&
+    typeof b.excludeId === "string" &&
+    (b.parkingWideSearch === undefined || typeof b.parkingWideSearch === "boolean")
   );
 }
 
@@ -40,8 +43,8 @@ app.post("/prepare", async (c) => {
     return c.json({ error: "invalid_request" }, 400);
   }
 
-  const { lat, lon, excludeId } = body;
-  const cacheKey = buildNearbyCacheKey(lat, lon);
+  const { lat, lon, excludeId, parkingWideSearch } = body;
+  const cacheKey = buildNearbyCacheKey(lat, lon, parkingWideSearch ?? false);
   const cached = await getCachedPois(c.env.CACHE, cacheKey);
 
   if (cached) {
@@ -54,7 +57,7 @@ app.post("/prepare", async (c) => {
     return c.json(response);
   }
 
-  const query = buildNearbyQuery(lat, lon);
+  const query = buildNearbyQuery(lat, lon, undefined, parkingWideSearch ?? false);
   const response: NearbyPrepareResponseBody = {
     status: "need_fetch",
     query,

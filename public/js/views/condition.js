@@ -10,7 +10,11 @@ export function initConditionView(store) {
   const errorEl = document.getElementById("condition-error");
   const radiusChips = document.getElementById("radius-chips");
   const radiusSlider = document.getElementById("radius-slider");
+  const destinationTypeChips = document.getElementById("destination-type-chips");
+  const shopCategoryField = document.getElementById("shop-category-field");
   const categoryChips = document.getElementById("category-chips");
+  const parkingField = document.getElementById("parking-field");
+  const parkingChips = document.getElementById("parking-chips");
 
   function updateRadiusUI(radiusKm) {
     for (const chip of radiusChips.children) {
@@ -19,9 +23,26 @@ export function initConditionView(store) {
     radiusSlider.value = String(RADIUS_STEPS.indexOf(radiusKm));
   }
 
+  function updateDestinationTypeUI(destinationType) {
+    for (const chip of destinationTypeChips.children) {
+      chip.classList.toggle("active", chip.dataset.destinationType === destinationType);
+    }
+    shopCategoryField.hidden = destinationType !== "shop";
+    parkingField.hidden = destinationType !== "other";
+  }
+
   function updateCategoryUI(category) {
     for (const chip of categoryChips.children) {
       chip.classList.toggle("active", chip.dataset.category === category);
+    }
+  }
+
+  function updateParkingUI(parkingRequired) {
+    for (const chip of parkingChips.children) {
+      chip.classList.toggle(
+        "active",
+        (chip.dataset.parking === "required") === parkingRequired,
+      );
     }
   }
 
@@ -39,12 +60,30 @@ export function initConditionView(store) {
     updateRadiusUI(radiusKm);
   });
 
+  destinationTypeChips.addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip-card");
+    if (!chip) return;
+    const destinationType = chip.dataset.destinationType;
+    const category = destinationType === "other" ? "other" : store.getState().lastShopCategory;
+    store.setState({ destinationType, category });
+    updateDestinationTypeUI(destinationType);
+    updateCategoryUI(category);
+  });
+
   categoryChips.addEventListener("click", (e) => {
     const chip = e.target.closest(".chip-card");
     if (!chip) return;
     const category = chip.dataset.category;
-    store.setState({ category });
+    store.setState({ category, lastShopCategory: category });
     updateCategoryUI(category);
+  });
+
+  parkingChips.addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip-card");
+    if (!chip) return;
+    const parkingRequired = chip.dataset.parking === "required";
+    store.setState({ parkingRequired });
+    updateParkingUI(parkingRequired);
   });
 
   searchButton.addEventListener("click", () => {
@@ -67,5 +106,7 @@ export function initConditionView(store) {
 
   const initialState = store.getState();
   updateRadiusUI(initialState.radiusKm);
+  updateDestinationTypeUI(initialState.destinationType);
   updateCategoryUI(initialState.category);
+  updateParkingUI(initialState.parkingRequired);
 }

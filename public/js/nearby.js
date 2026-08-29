@@ -8,8 +8,15 @@ export async function loadNearbyPois(store) {
 
   store.setState({ nearbyLoading: true, nearbyError: null });
 
+  const parkingWideSearch = picked.category === "other" && state.parkingRequired === true;
+
   try {
-    const prepared = await prepareNearby({ lat: picked.lat, lon: picked.lon, excludeId: picked.id });
+    const prepared = await prepareNearby({
+      lat: picked.lat,
+      lon: picked.lon,
+      excludeId: picked.id,
+      parkingWideSearch,
+    });
 
     const result =
       prepared.status === "done"

@@ -1,5 +1,5 @@
 import type { OverpassElement } from "./overpass";
-import type { Candidate, ShopCategory } from "../types";
+import type { Candidate, DestinationCategory } from "../types";
 
 const ADDRESS_TAG_KEYS = [
   "addr:state",
@@ -18,7 +18,7 @@ export function buildAddress(tags: Record<string, string>): string | null {
 
 export function toCandidates(
   elements: OverpassElement[],
-  category: ShopCategory,
+  category: DestinationCategory,
 ): Candidate[] {
   const candidates: Candidate[] = [];
   for (const el of elements) {

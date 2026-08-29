@@ -25,6 +25,7 @@ export async function performSearch(store, { isReroll = false } = {}) {
       lon: state.location.lon,
       radiusKm: state.radiusKm,
       category: state.category,
+      parkingRequired: state.parkingRequired,
       excludeIds,
     });
 
@@ -36,6 +37,7 @@ export async function performSearch(store, { isReroll = false } = {}) {
       result = await processSearch({
         cacheKey: prepared.cacheKey,
         category: state.category,
+        parkingRequired: state.parkingRequired,
         excludeIds,
         overpassResponse,
         lat: state.location.lat,

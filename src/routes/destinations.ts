@@ -6,7 +6,7 @@ import type {
   PrepareResponseBody,
   ProcessRequestBody,
   SearchResponseBody,
-  ShopCategory,
+  DestinationCategory,
 } from "../types";
 import {
   buildOverpassQuery,
@@ -17,11 +17,18 @@ import {
 } from "../lib/overpass";
 import { toCandidates } from "../lib/candidate";
 import { excludeNearHighways } from "../lib/highway-filter";
+import { isParkingElement, filterByNearbyParking } from "../lib/parking-filter";
 import { buildCacheKey, getCachedCandidates, putCachedCandidates } from "../lib/cache";
 import { computeDistanceBand, haversineDistanceKm } from "../lib/geo";
 
 const ALLOWED_RADIUS_KM = [10, 30, 50, 100];
-const ALLOWED_CATEGORIES: ShopCategory[] = ["food_rest", "shopping_other"];
+const ALLOWED_CATEGORIES: DestinationCategory[] = ["food_rest", "shopping_other", "other"];
+// 停車場所（駐車場）データがどれだけ候補に近ければ「停車できる場所あり」とみなすか。
+// バイクで走る際の「近く」の感覚として1kmとした。当初50mを検討したが、山頂・峠等の
+// タグ位置と実際の駐車場（登山口等）の距離を実データで検証した結果、50mでは
+// 事実上マッチ件数が0件になることが判明したため変更した
+// （docs/plans/260829-185103-phase4a-店以外タグ地点と停車場所.md）。
+const PARKING_PROXIMITY_BUFFER_M = 1000;
 
 function isValidPrepareRequest(body: unknown): body is PrepareRequestBody {
   if (typeof body !== "object" || body === null) return false;
@@ -32,7 +39,8 @@ function isValidPrepareRequest(body: unknown): body is PrepareRequestBody {
     typeof b.radiusKm === "number" &&
     ALLOWED_RADIUS_KM.includes(b.radiusKm) &&
     typeof b.category === "string" &&
-    ALLOWED_CATEGORIES.includes(b.category as ShopCategory) &&
+    ALLOWED_CATEGORIES.includes(b.category as DestinationCategory) &&
+    typeof b.parkingRequired === "boolean" &&
     (b.excludeIds === undefined || Array.isArray(b.excludeIds))
   );
 }
@@ -43,7 +51,8 @@ function isValidProcessRequest(body: unknown): body is ProcessRequestBody {
   return (
     typeof b.cacheKey === "string" &&
     typeof b.category === "string" &&
-    ALLOWED_CATEGORIES.includes(b.category as ShopCategory) &&
+    ALLOWED_CATEGORIES.includes(b.category as DestinationCategory) &&
+    typeof b.parkingRequired === "boolean" &&
     (b.excludeIds === undefined || Array.isArray(b.excludeIds)) &&
     "overpassResponse" in b &&
     typeof b.lat === "number" &&
@@ -70,8 +79,8 @@ app.post("/prepare", async (c) => {
     return c.json({ error: "invalid_request" }, 400);
   }
 
-  const { lat, lon, radiusKm, category, excludeIds } = body;
-  const cacheKey = buildCacheKey(lat, lon, radiusKm, category);
+  const { lat, lon, radiusKm, category, parkingRequired, excludeIds } = body;
+  const cacheKey = buildCacheKey(lat, lon, radiusKm, category, parkingRequired);
   const cached = await getCachedCandidates(c.env.CACHE, cacheKey);
 
   if (cached) {
@@ -101,24 +110,31 @@ app.post("/process", async (c) => {
     return c.json({ error: "invalid_request" }, 400);
   }
 
-  const { cacheKey, category, excludeIds, overpassResponse, lat, lon, radiusKm } = body;
+  const { cacheKey, category, parkingRequired, excludeIds, overpassResponse, lat, lon, radiusKm } = body;
 
   let candidates: Candidate[];
   try {
     const parsed = parseOverpassResponse(overpassResponse);
-    const candidateElements = parsed.elements.filter((el) => !el.geometry);
     const highwayElements = parsed.elements.filter((el) => Array.isArray(el.geometry));
+    const parkingElements = parsed.elements.filter((el) => !el.geometry && isParkingElement(el));
+    const candidateElements = parsed.elements.filter(
+      (el) => !el.geometry && !isParkingElement(el),
+    );
     const rawCandidates = toCandidates(candidateElements, category);
     const nonHighwayCandidates = excludeNearHighways(
       rawCandidates,
       highwayElements,
       HIGHWAY_EXCLUSION_BUFFER_M,
     );
+    const parkingFilteredCandidates =
+      category === "other" && parkingRequired
+        ? filterByNearbyParking(nonHighwayCandidates, parkingElements, PARKING_PROXIMITY_BUFFER_M)
+        : nonHighwayCandidates;
     // 探索範囲は「指定距離以内」ではなく「指定距離に近い帯」として扱う
     // （docs/decisions/260829-search-radius-band.md）。範囲外に見つからなくても
     // 自動的に範囲を広げず、そのまま0件として扱う。
     const { innerKm, outerKm } = computeDistanceBand(radiusKm);
-    candidates = nonHighwayCandidates.filter((cand) => {
+    candidates = parkingFilteredCandidates.filter((cand) => {
       const distKm = haversineDistanceKm(lat, lon, cand.lat, cand.lon);
       return distKm >= innerKm && distKm <= outerKm;
     });

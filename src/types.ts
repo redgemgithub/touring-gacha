@@ -3,14 +3,14 @@ export interface Env {
   MAPTILER_API_KEY: string;
 }
 
-export type ShopCategory = "food_rest" | "shopping_other";
+export type DestinationCategory = "food_rest" | "shopping_other" | "other";
 
 export interface Candidate {
   id: string;
   lat: number;
   lon: number;
   name: string | null;
-  category: ShopCategory;
+  category: DestinationCategory;
   address: string | null;
 }
 
@@ -18,7 +18,9 @@ export interface PrepareRequestBody {
   lat: number;
   lon: number;
   radiusKm: number;
-  category: ShopCategory;
+  category: DestinationCategory;
+  // category==="other"のときのみ意味を持つ。それ以外は無視される
+  parkingRequired: boolean;
   excludeIds: string[];
 }
 
@@ -40,7 +42,9 @@ export type PrepareResponseBody =
 
 export interface ProcessRequestBody {
   cacheKey: string;
-  category: ShopCategory;
+  category: DestinationCategory;
+  // category==="other"のときのみ意味を持つ。それ以外は無視される
+  parkingRequired: boolean;
   excludeIds: string[];
   overpassResponse: unknown;
   // 探索範囲の帯フィルタ（docs/decisions/260829-search-radius-band.md）に必要
@@ -76,6 +80,9 @@ export interface NearbyPrepareRequestBody {
   lat: number;
   lon: number;
   excludeId: string;
+  // 「店以外」×「停車できる場所が必要」で選ばれた目的地の場合のみtrueにする。
+  // 駐車場だけ検索範囲を広げる（src/lib/nearby.ts参照）
+  parkingWideSearch?: boolean;
 }
 
 export interface NearbyResponseBody {

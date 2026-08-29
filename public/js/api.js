@@ -11,11 +11,11 @@ export async function getConfig() {
   return res.json();
 }
 
-export async function prepareSearch({ lat, lon, radiusKm, category, excludeIds }) {
+export async function prepareSearch({ lat, lon, radiusKm, category, parkingRequired, excludeIds }) {
   const res = await fetch("/api/destinations/prepare", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ lat, lon, radiusKm, category, excludeIds }),
+    body: JSON.stringify({ lat, lon, radiusKm, category, parkingRequired, excludeIds }),
   });
   if (!res.ok) throw makeApiError(res, await res.json().catch(() => ({})));
   return res.json();
@@ -47,6 +47,7 @@ export async function fetchOverpassDirect(endpoint, query) {
 export async function processSearch({
   cacheKey,
   category,
+  parkingRequired,
   excludeIds,
   overpassResponse,
   lat,
@@ -56,17 +57,26 @@ export async function processSearch({
   const res = await fetch("/api/destinations/process", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cacheKey, category, excludeIds, overpassResponse, lat, lon, radiusKm }),
+    body: JSON.stringify({
+      cacheKey,
+      category,
+      parkingRequired,
+      excludeIds,
+      overpassResponse,
+      lat,
+      lon,
+      radiusKm,
+    }),
   });
   if (!res.ok) throw makeApiError(res, await res.json().catch(() => ({})));
   return res.json();
 }
 
-export async function prepareNearby({ lat, lon, excludeId }) {
+export async function prepareNearby({ lat, lon, excludeId, parkingWideSearch }) {
   const res = await fetch("/api/nearby/prepare", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ lat, lon, excludeId }),
+    body: JSON.stringify({ lat, lon, excludeId, parkingWideSearch }),
   });
   if (!res.ok) throw makeApiError(res, await res.json().catch(() => ({})));
   return res.json();

@@ -39,8 +39,19 @@
       </div>
 
       <div class="field">
-        <p class="field-label">目的地の種類（店）</p>
-        <p class="field-note">店以外の目的地は今後対応予定です</p>
+        <p class="field-label">目的地の種類</p>
+        <div class="chip-group two-col" id="destination-type-chips">
+          <button type="button" class="chip-card active" data-destination-type="shop">
+            店<span class="chip-card-note">飲食・休憩／買い物 等</span>
+          </button>
+          <button type="button" class="chip-card" data-destination-type="other">
+            店以外<span class="chip-card-note">峠・展望 等</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field" id="shop-category-field">
+        <p class="field-label">店の種類</p>
         <div class="chip-group two-col" id="category-chips">
           <button type="button" class="chip-card active" data-category="food_rest">
             食事・休憩
@@ -49,6 +60,15 @@
             買い物・その他
           </button>
         </div>
+      </div>
+
+      <div class="field" id="parking-field" hidden>
+        <p class="field-label">停車できる場所</p>
+        <div class="chip-group two-col" id="parking-chips">
+          <button type="button" class="chip-card" data-parking="required">必要</button>
+          <button type="button" class="chip-card active" data-parking="any">問わない</button>
+        </div>
+        <p class="field-note">地図データから判断できる場合のみ条件に使用します</p>
       </div>
 
       <button type="button" id="search-button" class="primary-button" disabled>
