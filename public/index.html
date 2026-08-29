@@ -89,7 +89,10 @@
         <button type="button" id="recenter-button" aria-label="現在地に戻す">◎</button>
       </header>
       <div id="map"></div>
-      <p id="result-status" class="result-status" hidden></p>
+      <div id="result-status" class="result-status" hidden>
+        <p id="result-status-text"></p>
+        <button type="button" id="retry-button" class="primary-button" hidden>↻ もう一度探す</button>
+      </div>
       <div id="result-sheet" class="sheet" hidden>
         <div id="sheet-collapsed">
           <button type="button" id="candidate-info-button" class="nearby-item nearby-item-destination">

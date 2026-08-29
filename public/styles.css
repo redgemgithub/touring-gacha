@@ -213,6 +213,10 @@ body {
   padding: 16px;
 }
 
+.result-status .primary-button {
+  margin-top: 12px;
+}
+
 .sheet {
   background: var(--panel);
   border: 1px solid var(--panel-border);

@@ -78,6 +78,8 @@ function buildNearbyItemElement({ name, subtitle, icon, active, extraClass }) {
 export function initResultView(store) {
   const radiusLabel = document.getElementById("radius-label");
   const statusEl = document.getElementById("result-status");
+  const statusTextEl = document.getElementById("result-status-text");
+  const retryButton = document.getElementById("retry-button");
   const sheetEl = document.getElementById("result-sheet");
   const sheetCollapsedEl = document.getElementById("sheet-collapsed");
   const sheetExpandedEl = document.getElementById("sheet-expanded");
@@ -105,6 +107,10 @@ export function initResultView(store) {
   });
 
   rerollButton.addEventListener("click", () => {
+    performSearch(store, { isReroll: true });
+  });
+
+  retryButton.addEventListener("click", () => {
     performSearch(store, { isReroll: true });
   });
 
@@ -240,21 +246,24 @@ export function initResultView(store) {
 
     if (state.searching) {
       statusEl.hidden = false;
-      statusEl.textContent = "検索中…";
+      statusTextEl.textContent = "検索中…";
+      retryButton.hidden = true;
       sheetEl.hidden = true;
       return;
     }
 
     if (state.searchError) {
       statusEl.hidden = false;
-      statusEl.textContent = state.searchError.message;
+      statusTextEl.textContent = state.searchError.message;
+      retryButton.hidden = false;
       sheetEl.hidden = true;
       return;
     }
 
     if (!state.picked) {
       statusEl.hidden = false;
-      statusEl.textContent = "条件に合う目的地が見つかりませんでした。条件を変えてお試しください。";
+      statusTextEl.textContent = "条件に合う目的地が見つかりませんでした。条件を変えてお試しください。";
+      retryButton.hidden = false;
       sheetEl.hidden = true;
       return;
     }
