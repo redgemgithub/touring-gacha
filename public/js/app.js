@@ -16,6 +16,12 @@ const store = createStore({
   candidates: [],
   seenIds: [],
   decided: false,
+  sheetExpanded: false,
+  nearbyPois: [],
+  nearbyLoading: false,
+  nearbyError: null,
+  nearbyFetchedForId: null,
+  focusedPoiId: null,
 });
 
 function renderViewVisibility(state) {

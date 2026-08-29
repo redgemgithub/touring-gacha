@@ -25,7 +25,7 @@
 | Overpass要素→Candidate変換・住所組み立て | `src/lib/candidate.ts` | 済 | Phase 1 |
 | 座標バケット化（キャッシュキー用）・距離／方角計算 | `src/lib/geo.ts`（`bucketCoordinate`/`haversineDistanceKm`/`bearingLabel`） | 済 | Phase 1 |
 | KVキャッシュ（検索結果の保存・再抽選用） | `src/lib/cache.ts` | 済 | Phase 1 |
-| 周辺POI取得API | 未作成（新規ルート、または`destinations.ts`の拡張を検討） | 予定 | Phase 3 |
+| 周辺POI取得API（`POST /api/nearby/prepare`, `/process`） | `src/routes/nearby.ts`, `src/lib/nearby.ts`, `src/lib/poi.ts`, `src/lib/cache.ts`（`buildNearbyCacheKey`等） | 済 | Phase 3 |
 | KVバインディング設定 | `wrangler.jsonc` | 済 | Phase 1 |
 | 本番シークレット設定（MAPTILER_API_KEY） | `wrangler secret put`（ファイルなし、CLI操作） | 済 | Phase 2 |
 
@@ -42,10 +42,12 @@
 | 現在地取得・距離／方角の表示整形（クライアント側） | `public/js/geo.js` | 済 | Phase 1 |
 | 条件設定画面（GPS・探索範囲・店タイプ選択） | `public/js/views/condition.js` | 済（「店」のみ。「店以外」選択肢は未実装） | Phase 1／Phase 4で拡張 |
 | 停車できる場所の条件UI | `public/js/views/condition.js`（拡張予定） | 予定 | Phase 4 |
-| 結果地図画面（下部シート、決める/別の場所/ナビ用情報ボタン） | `public/js/views/result.js` | 済 | Phase 1 |
-| 地図描画（MapLibre初期化、ピン、破線ルート） | `public/js/components/map.js` | 済 | Phase 1 |
-| ナビ用情報コピーモーダル | `public/js/views/copy-modal.js` | 済 | Phase 1 |
-| 周辺情報展開画面（POI一覧・地図フォーカス連動） | 未作成（新規view） | 予定 | Phase 3 |
+| 結果地図画面（下部シート、決める/別の場所/ナビ用情報ボタン） | `public/js/views/result.js` | 済 | Phase 1、Phase 3で周辺情報表示・Phase 3.x でコピー処理を拡張 |
+| 地図描画（MapLibre初期化、ピン、破線ルート、POIマーカー、フォーカスリング） | `public/js/components/map.js` | 済 | Phase 1、Phase 3で拡張 |
+| 周辺情報展開画面（POI一覧・地図フォーカス連動） | `public/js/views/result.js`（`sheet-expanded`部分）, `public/js/nearby.js` | 済 | Phase 3 |
+| コピー項目設定（アプリ共通、緯度経度/名称/住所のチェックボックス） | `public/js/views/copy-modal.js`, `public/js/copy-preference.js` | 済 | Phase 1で「実行用モーダル」として新設、[decision](./decisions/260829-copy-preference.md)で「設定編集用」に役割変更 |
+| 目的地・周辺POIのコピー実行（設定に従い直接コピー） | `public/js/views/result.js`（`copyItem`） | 済 | 同上 |
+| 短時間通知（コピー完了トースト） | `public/js/toast.js` | 済 | 同上 |
 
 ## インフラ・設定・ドキュメント
 
@@ -57,8 +59,10 @@
 | ローカル環境変数テンプレート | `.dev.vars.example` | 済 |
 | インフラ方針・技術選定の経緯 | `docs/decisions/260828-infra-cloudflare-kv.md` | 済 |
 | Overpassをブラウザ直接fetchにした経緯 | `docs/decisions/260829-overpass-client-side-fetch.md` | 済 |
+| 探索範囲を帯検索にした経緯 | `docs/decisions/260829-search-radius-band.md` | 済 |
+| コピー方式をアプリ共通設定にした経緯 | `docs/decisions/260829-copy-preference.md` | 済 |
 | 全体の実装順序 | `docs/roadmap.md` | 済 |
-| 各フェーズの計画・実行記録 | `docs/plans/*.md` | Phase 1・Phase 2分済 |
+| 各フェーズの計画・実行記録 | `docs/plans/*.md` | Phase 1〜3分済 |
 
 ## 更新ルール
 

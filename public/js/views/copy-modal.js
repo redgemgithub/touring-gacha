@@ -1,13 +1,43 @@
-let currentCandidate = null;
+import { getCopyPreference, setCopyPreference } from "../copy-preference.js";
 
 export function initCopyModal() {
   const modal = document.getElementById("copy-modal");
   const closeButton = document.getElementById("copy-close-button");
-  const latlonEl = document.getElementById("copy-latlon");
-  const nameEl = document.getElementById("copy-name");
-  const addressRow = document.getElementById("copy-address-row");
-  const addressEl = document.getElementById("copy-address");
-  const allButton = document.getElementById("copy-all-button");
+  const openButton = document.getElementById("copy-settings-open-button");
+  const checkboxes = {
+    latlon: document.getElementById("copy-pref-latlon"),
+    name: document.getElementById("copy-pref-name"),
+    address: document.getElementById("copy-pref-address"),
+  };
+
+  function applyPreferenceToCheckboxes(preference) {
+    checkboxes.latlon.checked = preference.latlon;
+    checkboxes.name.checked = preference.name;
+    checkboxes.address.checked = preference.address;
+  }
+
+  function handleCheckboxChange() {
+    const preference = {
+      latlon: checkboxes.latlon.checked,
+      name: checkboxes.name.checked,
+      address: checkboxes.address.checked,
+    };
+    // 空コピーを防ぐため、全解除は許容しない
+    if (!preference.latlon && !preference.name && !preference.address) {
+      applyPreferenceToCheckboxes(getCopyPreference());
+      return;
+    }
+    setCopyPreference(preference);
+  }
+
+  Object.values(checkboxes).forEach((checkbox) => {
+    checkbox.addEventListener("change", handleCheckboxChange);
+  });
+
+  openButton.addEventListener("click", () => {
+    applyPreferenceToCheckboxes(getCopyPreference());
+    modal.hidden = false;
+  });
 
   closeButton.addEventListener("click", () => {
     modal.hidden = true;
@@ -16,42 +46,4 @@ export function initCopyModal() {
   modal.addEventListener("click", (e) => {
     if (e.target === modal) modal.hidden = true;
   });
-
-  modal.querySelectorAll("[data-copy-target]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const target = button.dataset.copyTarget;
-      const text = { latlon: latlonEl, name: nameEl, address: addressEl }[target]?.textContent ?? "";
-      copyText(text);
-    });
-  });
-
-  allButton.addEventListener("click", () => {
-    if (!currentCandidate) return;
-    const lines = [`緯度経度: ${latlonEl.textContent}`, `名称: ${nameEl.textContent}`];
-    if (currentCandidate.address) lines.push(`住所: ${currentCandidate.address}`);
-    copyText(lines.join("\n"));
-  });
-
-  function copyText(text) {
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).catch(() => {});
-    }
-  }
-}
-
-export function openCopyModal(candidate) {
-  currentCandidate = candidate;
-  const modal = document.getElementById("copy-modal");
-  document.getElementById("copy-latlon").textContent = `${candidate.lat.toFixed(6)}, ${candidate.lon.toFixed(6)}`;
-  document.getElementById("copy-name").textContent = candidate.name ?? "(名称不明)";
-
-  const addressRow = document.getElementById("copy-address-row");
-  if (candidate.address) {
-    addressRow.hidden = false;
-    document.getElementById("copy-address").textContent = candidate.address;
-  } else {
-    addressRow.hidden = true;
-  }
-
-  modal.hidden = false;
 }

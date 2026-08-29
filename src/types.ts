@@ -48,3 +48,55 @@ export interface ProcessRequestBody {
   lon: number;
   radiusKm: number;
 }
+
+export type PoiKind =
+  | "parking"
+  | "shrine_temple"
+  | "vending_machine"
+  | "fuel"
+  | "toilets"
+  | "food_rest"
+  | "shop"
+  | "other";
+
+export interface PoiItem {
+  id: string;
+  lat: number;
+  lon: number;
+  name: string | null;
+  kind: PoiKind;
+  address: string | null;
+}
+
+export interface RankedPoiItem extends PoiItem {
+  distanceM: number;
+}
+
+export interface NearbyPrepareRequestBody {
+  lat: number;
+  lon: number;
+  excludeId: string;
+}
+
+export interface NearbyResponseBody {
+  pois: RankedPoiItem[];
+  cacheHit: boolean;
+  fetchedAt: string;
+}
+
+export type NearbyPrepareResponseBody =
+  | ({ status: "done" } & NearbyResponseBody)
+  | {
+      status: "need_fetch";
+      query: string;
+      endpoint: string;
+      cacheKey: string;
+    };
+
+export interface NearbyProcessRequestBody {
+  cacheKey: string;
+  lat: number;
+  lon: number;
+  excludeId: string;
+  overpassResponse: unknown;
+}

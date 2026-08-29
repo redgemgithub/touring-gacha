@@ -1,5 +1,6 @@
-import type { Candidate, Env, ShopCategory } from "../types";
+import type { Candidate, Env, PoiItem, ShopCategory } from "../types";
 import { bucketCoordinate } from "./geo";
+import { NEARBY_POI_RADIUS_M } from "./nearby";
 
 const CACHE_TTL_SECONDS = 60 * 60 * 24;
 
@@ -29,4 +30,22 @@ export async function putCachedCandidates(
   await cache.put(key, JSON.stringify(candidates), {
     expirationTtl: CACHE_TTL_SECONDS,
   });
+}
+
+export function buildNearbyCacheKey(lat: number, lon: number): string {
+  const bucket = bucketCoordinate(lat, lon, NEARBY_POI_RADIUS_M / 1000);
+  return `poi:v1:${bucket.lat.toFixed(4)}:${bucket.lon.toFixed(4)}`;
+}
+
+export async function getCachedPois(cache: Env["CACHE"], key: string): Promise<PoiItem[] | null> {
+  const raw = await cache.get(key, "json");
+  return (raw as PoiItem[] | null) ?? null;
+}
+
+export async function putCachedPois(
+  cache: Env["CACHE"],
+  key: string,
+  pois: PoiItem[],
+): Promise<void> {
+  await cache.put(key, JSON.stringify(pois), { expirationTtl: CACHE_TTL_SECONDS });
 }

@@ -9,7 +9,7 @@ const ADDRESS_TAG_KEYS = [
   "addr:housenumber",
 ];
 
-function buildAddress(tags: Record<string, string>): string | null {
+export function buildAddress(tags: Record<string, string>): string | null {
   const parts = ADDRESS_TAG_KEYS.map((key) => tags[key]).filter(
     (v): v is string => Boolean(v),
   );

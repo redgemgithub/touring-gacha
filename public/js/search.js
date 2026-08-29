@@ -9,6 +9,12 @@ export async function performSearch(store, { isReroll = false } = {}) {
     searchError: null,
     view: "result",
     decided: false,
+    sheetExpanded: false,
+    nearbyPois: [],
+    nearbyLoading: false,
+    nearbyError: null,
+    nearbyFetchedForId: null,
+    focusedPoiId: null,
   });
 
   const excludeIds = isReroll ? state.seenIds : [];

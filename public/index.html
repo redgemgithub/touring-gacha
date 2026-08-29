@@ -13,6 +13,9 @@
       <header class="app-header">
         <h1>ツーリング目的地ガチャ</h1>
         <p class="subtitle">今日はどこまで走る？</p>
+        <button type="button" id="copy-settings-open-button" class="link-button">
+          ⚙ コピーする情報を選ぶ
+        </button>
       </header>
 
       <div class="card">
@@ -63,15 +66,30 @@
       <div id="map"></div>
       <p id="result-status" class="result-status" hidden></p>
       <div id="result-sheet" class="sheet" hidden>
-        <p class="sheet-title" id="candidate-name"></p>
-        <p class="sheet-coords" id="candidate-coords"></p>
-        <p class="sheet-distance" id="candidate-distance"></p>
-        <button type="button" id="decide-button" class="primary-button">
-          ✓ この場所に決める
-        </button>
-        <div class="sheet-actions">
-          <button type="button" id="reroll-button">↻ 別の場所</button>
-          <button type="button" id="copy-open-button">⧉ ナビ用情報</button>
+        <div id="sheet-collapsed">
+          <p class="sheet-title" id="candidate-name"></p>
+          <p class="sheet-coords" id="candidate-coords"></p>
+          <p class="sheet-distance" id="candidate-distance"></p>
+          <button type="button" id="decide-button" class="primary-button">
+            ✓ この場所に決める
+          </button>
+          <div class="sheet-actions">
+            <button type="button" id="reroll-button">↻ 別の場所</button>
+            <button type="button" id="copy-open-button">⧉ ナビ用情報</button>
+          </div>
+          <button type="button" id="nearby-expand-toggle" class="sheet-expand-toggle">
+            ⌃ 周辺のスポットを見る
+          </button>
+        </div>
+        <div id="sheet-expanded" hidden>
+          <button type="button" id="nearby-collapse-button" class="sheet-collapse-button">
+            ⌄ 地図に戻る
+          </button>
+          <h2 class="nearby-heading">周辺情報</h2>
+          <div class="nearby-list" id="nearby-destination-item"></div>
+          <p class="nearby-subheading" id="nearby-count-label"></p>
+          <p class="nearby-status" id="nearby-status" hidden></p>
+          <div class="nearby-list" id="nearby-poi-list"></div>
         </div>
       </div>
     </section>
@@ -79,36 +97,28 @@
     <div id="copy-modal" class="modal" hidden>
       <div class="modal-content">
         <div class="modal-header">
-          <h2>ナビ用情報をコピー</h2>
+          <h2>コピーする情報を選ぶ</h2>
           <button type="button" id="copy-close-button" aria-label="閉じる">×</button>
         </div>
-        <div class="copy-row">
-          <div>
-            <p class="copy-label">緯度・経度</p>
-            <p class="copy-value" id="copy-latlon"></p>
-          </div>
-          <button type="button" class="copy-button" data-copy-target="latlon">コピー</button>
-        </div>
-        <div class="copy-row">
-          <div>
-            <p class="copy-label">名称</p>
-            <p class="copy-value" id="copy-name"></p>
-          </div>
-          <button type="button" class="copy-button" data-copy-target="name">コピー</button>
-        </div>
-        <div class="copy-row" id="copy-address-row" hidden>
-          <div>
-            <p class="copy-label">住所</p>
-            <p class="copy-value" id="copy-address"></p>
-          </div>
-          <button type="button" class="copy-button" data-copy-target="address">コピー</button>
-        </div>
-        <button type="button" id="copy-all-button" class="primary-button">
-          ⧉ すべてコピー
-        </button>
-        <p class="modal-note">コピーした情報をお使いのナビアプリに貼り付けてください</p>
+        <p class="modal-description">
+          ナビアプリにコピーする際、含める情報を選べます（このアプリ全体の設定として保存されます）。
+        </p>
+        <label class="checkbox-row">
+          <input type="checkbox" id="copy-pref-latlon" />
+          <span>緯度・経度</span>
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="copy-pref-name" />
+          <span>名称</span>
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="copy-pref-address" />
+          <span>住所（取得できる場合のみ使われます）</span>
+        </label>
       </div>
     </div>
+
+    <p id="toast" class="toast" hidden></p>
   </main>
 
   <script type="module" src="/js/app.js"></script>

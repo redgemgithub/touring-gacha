@@ -25,12 +25,14 @@
 - 実機確認の過程で、Cloudflare Workersの共有送信元IPがOverpass API側で制限を受けていることが判明し、Overpassへの問い合わせをサーバー側からブラウザ側の直接fetchへ変更する設計変更を行った（[docs/decisions/260829-overpass-client-side-fetch.md](./decisions/260829-overpass-client-side-fetch.md)）。この変更により実機での動作を確認できた
 - 記録: [docs/plans/260828-183112-phase2-初回デプロイ疎通確認.md](./plans/260828-183112-phase2-初回デプロイ疎通確認.md)、[docs/plans/260829-082814-overpassクライアント直接fetch移行.md](./plans/260829-082814-overpassクライアント直接fetch移行.md)
 
-### Phase 3（案）: 周辺情報表示（周辺情報展開画面） — 未着手
+### Phase 3: 周辺情報表示（周辺情報展開画面） — 完了（2026-08-29）
 
-結果画面の下部シートを引き上げて、目的地本体＋近くのPOI一覧を表示する画面（`docs/mockups/result-expanded.png`に対応）。POI取得はOverpass APIの流用・拡張。一覧から地図上の該当ピンへフォーカスする操作を含む。
+結果画面の下部シートを引き上げて、目的地本体＋近くのPOI一覧を表示する画面（`docs/mockups/result-expanded.png`に対応）。POI取得は目的地検索と同じprepare/process/ブラウザ直接fetchパターンを踏襲。一覧から地図上の該当ピンへフォーカスする操作を含む。
 
 - なぜPhase 2の次か（提案理由）: Phase 1で作った基盤（Overpass連携・地図表示・状態管理）の上に、既存の枠組みを拡張するだけで実現できる機能であり、新規性の高いドメインロジック（Phase 4の交差点判定等）より先に着手する方がリスクが低いと考えた
 - 対応する要件: docs/requirements.md 7(周辺情報表示)
+- 実装完了後、周辺POIを選択できても情報をコピーできないという指摘を受け、コピーの仕組み自体を見直した（都度選択のモーダルから、アプリ全体で1回設定する方式へ変更。[docs/decisions/260829-copy-preference.md](./decisions/260829-copy-preference.md)）
+- 記録: [docs/plans/260829-112551-phase3-周辺情報表示.md](./plans/260829-112551-phase3-周辺情報表示.md)、[docs/plans/260829-121720-コピー項目設定と周辺POIコピー.md](./plans/260829-121720-コピー項目設定と周辺POIコピー.md)
 
 ### Phase 4（案）: 目的地種別「店以外」＋ 停車できる場所条件 — 未着手
 

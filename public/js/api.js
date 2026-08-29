@@ -61,3 +61,23 @@ export async function processSearch({
   if (!res.ok) throw makeApiError(res, await res.json().catch(() => ({})));
   return res.json();
 }
+
+export async function prepareNearby({ lat, lon, excludeId }) {
+  const res = await fetch("/api/nearby/prepare", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lat, lon, excludeId }),
+  });
+  if (!res.ok) throw makeApiError(res, await res.json().catch(() => ({})));
+  return res.json();
+}
+
+export async function processNearby({ cacheKey, lat, lon, excludeId, overpassResponse }) {
+  const res = await fetch("/api/nearby/process", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cacheKey, lat, lon, excludeId, overpassResponse }),
+  });
+  if (!res.ok) throw makeApiError(res, await res.json().catch(() => ({})));
+  return res.json();
+}

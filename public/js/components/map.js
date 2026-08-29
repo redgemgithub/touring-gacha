@@ -4,6 +4,8 @@ let map = null;
 let userMarker = null;
 let candidateMarker = null;
 let mapReadyPromise = null;
+let poiMarkers = new Map();
+let focusRingMarker = null;
 
 export function initMap(container, styleUrl, center) {
   map = new maplibregl.Map({
@@ -69,4 +71,41 @@ export async function showCandidate(userLat, userLon, candLat, candLon) {
 export function recenter(lat, lon) {
   if (!map) return;
   map.flyTo({ center: [lon, lat] });
+}
+
+export function clearFocusRing() {
+  if (focusRingMarker) {
+    focusRingMarker.remove();
+    focusRingMarker = null;
+  }
+}
+
+export function clearNearbyPoiMarkers() {
+  poiMarkers.forEach((m) => m.remove());
+  poiMarkers.clear();
+  clearFocusRing();
+}
+
+export async function showNearbyPois(pois) {
+  if (!map) return;
+  if (mapReadyPromise) await mapReadyPromise;
+  clearNearbyPoiMarkers();
+  for (const poi of pois) {
+    const el = document.createElement("div");
+    el.className = "poi-dot-marker";
+    const marker = new maplibregl.Marker({ element: el }).setLngLat([poi.lon, poi.lat]).addTo(map);
+    poiMarkers.set(poi.id, marker);
+  }
+}
+
+export async function focusPoi(lat, lon) {
+  if (!map) return;
+  if (mapReadyPromise) await mapReadyPromise;
+  if (!focusRingMarker) {
+    const el = document.createElement("div");
+    el.className = "focus-ring-marker";
+    focusRingMarker = new maplibregl.Marker({ element: el });
+  }
+  focusRingMarker.setLngLat([lon, lat]).addTo(map);
+  map.flyTo({ center: [lon, lat], zoom: 16 });
 }
