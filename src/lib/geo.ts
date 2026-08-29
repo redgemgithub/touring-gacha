@@ -17,6 +17,34 @@ export function haversineDistanceKm(
   return EARTH_RADIUS_KM * c;
 }
 
+/**
+ * 起点から指定の方角・距離だけ進んだ到達点を求める（順方向の球面測地線計算）。
+ * Phase 4-B（次数ベースの交差点検出）の仮地点（乱数の方角×指定距離ちょうど）を
+ * 決めるために使う（docs/plans/260830-060923-phase4b交差点検出実装.md）。
+ */
+export function destinationPoint(
+  lat: number,
+  lon: number,
+  bearingDeg: number,
+  distanceKm: number,
+): { lat: number; lon: number } {
+  const angularDistance = distanceKm / EARTH_RADIUS_KM;
+  const bearingRad = (bearingDeg * Math.PI) / 180;
+  const fromLatRad = (lat * Math.PI) / 180;
+  const fromLonRad = (lon * Math.PI) / 180;
+  const toLatRad = Math.asin(
+    Math.sin(fromLatRad) * Math.cos(angularDistance) +
+      Math.cos(fromLatRad) * Math.sin(angularDistance) * Math.cos(bearingRad),
+  );
+  const toLonRad =
+    fromLonRad +
+    Math.atan2(
+      Math.sin(bearingRad) * Math.sin(angularDistance) * Math.cos(fromLatRad),
+      Math.cos(angularDistance) - Math.sin(fromLatRad) * Math.sin(toLatRad),
+    );
+  return { lat: (toLatRad * 180) / Math.PI, lon: (toLonRad * 180) / Math.PI };
+}
+
 const BEARING_LABELS = [
   "北",
   "北東",

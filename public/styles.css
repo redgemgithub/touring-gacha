@@ -106,6 +106,11 @@ body {
   grid-template-columns: 1fr 1fr;
 }
 
+.chip-group.three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
 .chip,
 .chip-card {
   background: var(--panel);
@@ -120,6 +125,17 @@ body {
 .chip-card {
   padding: 20px 12px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.chip-card-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 2.6rem;
 }
 
 .chip-card-note {

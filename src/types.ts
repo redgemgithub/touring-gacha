@@ -3,7 +3,16 @@ export interface Env {
   MAPTILER_API_KEY: string;
 }
 
-export type DestinationCategory = "food_rest" | "shopping_other" | "other";
+export type DestinationCategory = "food_rest" | "shopping_other" | "other" | "intersection";
+
+// "intersection"カテゴリのみ使用。プローブ→拡張の2段階のどちらの問い合わせかと、
+// 両段階で共有する仮地点（docs/plans/260830-060923-phase4b交差点検出実装.md）
+export type IntersectionStage = "probe" | "escalate";
+
+export interface IntersectionAnchor {
+  lat: number;
+  lon: number;
+}
 
 export interface Candidate {
   id: string;
@@ -38,6 +47,9 @@ export type PrepareResponseBody =
       query: string;
       endpoint: string;
       cacheKey: string;
+      // category==="intersection"のときのみ使用
+      intersectionStage?: IntersectionStage;
+      anchor?: IntersectionAnchor;
     };
 
 export interface ProcessRequestBody {
@@ -51,7 +63,14 @@ export interface ProcessRequestBody {
   lat: number;
   lon: number;
   radiusKm: number;
+  // category==="intersection"のときのみ使用
+  intersectionStage?: IntersectionStage;
+  anchor?: IntersectionAnchor;
 }
+
+// /processは、"intersection"カテゴリのプローブ→拡張の2段階目に進む必要がある場合、
+// SearchResponseBodyではなくPrepareResponseBody相当（need_fetch）を返すことがある
+export type ProcessResponseBody = PrepareResponseBody;
 
 export type PoiKind =
   | "parking"

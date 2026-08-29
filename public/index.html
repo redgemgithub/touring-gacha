@@ -40,12 +40,17 @@
 
       <div class="field">
         <p class="field-label">目的地の種類</p>
-        <div class="chip-group two-col" id="destination-type-chips">
+        <div class="chip-group three-col" id="destination-type-chips">
           <button type="button" class="chip-card active" data-destination-type="shop">
-            店<span class="chip-card-note">飲食・休憩／買い物 等</span>
+            <span class="chip-card-title">スポット（店）</span>
+            <span class="chip-card-note">飲食・休憩／買い物 等</span>
           </button>
           <button type="button" class="chip-card" data-destination-type="other">
-            店以外<span class="chip-card-note">峠・展望 等</span>
+            <span class="chip-card-title">スポット（店以外）</span>
+            <span class="chip-card-note">峠・展望 等</span>
+          </button>
+          <button type="button" class="chip-card" data-destination-type="intersection">
+            <span class="chip-card-title">交差点</span>
           </button>
         </div>
       </div>

@@ -28,15 +28,19 @@ export async function performSearch(store, { isReroll = false } = {}) {
       excludeIds,
     });
 
-    let result;
-    if (prepared.status === "done") {
-      result = prepared;
-    } else {
-      const overpassResponse = await fetchOverpassDirect(prepared.endpoint, prepared.query);
+    // 「交差点」カテゴリはプローブ（100m）→不足時のみ拡張（1km）の最大2段階になる。
+    // need_fetchが返る限りfetch→processを繰り返すループにすることで、既存カテゴリ
+    // （1段階で終わる）と交差点カテゴリの両方に対応する
+    // （docs/plans/260830-060923-phase4b交差点検出実装.md）。
+    let result = prepared;
+    while (result.status === "need_fetch") {
+      const overpassResponse = await fetchOverpassDirect(result.endpoint, result.query);
       result = await processSearch({
-        cacheKey: prepared.cacheKey,
+        cacheKey: result.cacheKey,
         category: state.category,
         parkingRequired: state.parkingRequired,
+        intersectionStage: result.intersectionStage,
+        anchor: result.anchor,
         excludeIds,
         overpassResponse,
         lat: state.location.lat,

@@ -2,7 +2,7 @@ import type { DestinationCategory } from "../types";
 import { computeDistanceBand } from "./geo";
 
 export const OVERPASS_ENDPOINT = "https://overpass-api.de/api/interpreter";
-const EXCLUDED_HIGHWAY_TYPES = ["motorway", "motorway_link", "trunk", "trunk_link"];
+export const EXCLUDED_HIGHWAY_TYPES = ["motorway", "motorway_link", "trunk", "trunk_link"];
 export const HIGHWAY_EXCLUSION_BUFFER_M = 100;
 const HIGHWAY_SEARCH_BUFFER_M = 200;
 const MAX_CANDIDATE_ELEMENTS = 300;
@@ -12,7 +12,11 @@ const MAX_HIGHWAY_ELEMENTS = 200;
 const PARKING_SEARCH_BUFFER_M = 1000;
 const MAX_PARKING_ELEMENTS = 300;
 
-const CATEGORY_TAG_FILTERS: Record<DestinationCategory, string> = {
+// "intersection"はタグ検索ではなく道路網の次数計算で候補を作るため対象外
+// （src/lib/intersection.ts）。buildOverpassQueryにも渡さない。
+export type TagBasedDestinationCategory = Exclude<DestinationCategory, "intersection">;
+
+const CATEGORY_TAG_FILTERS: Record<TagBasedDestinationCategory, string> = {
   food_rest:
     'nwr["amenity"~"^(restaurant|cafe|fast_food|bar|pub|ice_cream|food_court|biergarten)$"]',
   shopping_other: 'nwr["shop"];nwr["amenity"~"^(marketplace|fuel)$"]',
@@ -28,6 +32,8 @@ export interface OverpassElement {
   center?: { lat: number; lon: number };
   geometry?: { lat: number; lon: number }[];
   tags?: Record<string, string>;
+  // wayが参照するノードIDの列。交差点検出（src/lib/intersection.ts）でのみ使用する
+  nodes?: number[];
 }
 
 export interface OverpassRawResponse {
@@ -57,7 +63,7 @@ export function buildOverpassQuery(
   lat: number,
   lon: number,
   radiusKm: number,
-  category: DestinationCategory,
+  category: TagBasedDestinationCategory,
 ): string {
   const { outerKm } = computeDistanceBand(radiusKm);
   const radiusM = Math.round(outerKm * 1000);

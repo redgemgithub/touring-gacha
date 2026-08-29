@@ -64,7 +64,8 @@ export function initConditionView(store) {
     const chip = e.target.closest(".chip-card");
     if (!chip) return;
     const destinationType = chip.dataset.destinationType;
-    const category = destinationType === "other" ? "other" : store.getState().lastShopCategory;
+    const category =
+      destinationType === "shop" ? store.getState().lastShopCategory : destinationType;
     store.setState({ destinationType, category });
     updateDestinationTypeUI(destinationType);
     updateCategoryUI(category);
