@@ -2,6 +2,12 @@ import { haversineDistanceKm } from "./geo";
 import type { PoiItem, RankedPoiItem } from "../types";
 
 export const NEARBY_POI_RADIUS_M = 500;
+// 500mで0件のときだけ、1回だけこの半径まで拡張して再検索する。「店」「店以外」は
+// 目的地自体が店・名所であるため周辺にも何かある確率が高いが、「交差点」は道路の
+// 構造だけで選ばれるため周辺に何もない確率が他カテゴリより高い。この非対称性を
+// 緩和するため、カテゴリを問わず一律で適用する
+// （docs/plans/260830-070951-周辺情報500m空振り時1km拡張.md）。
+export const NEARBY_ESCALATE_RADIUS_M = 1000;
 export const NEARBY_POI_LIMIT = 5;
 const NEARBY_QUERY_MAX_ELEMENTS = 50;
 // 「店以外」×「停車できる場所が必要」で選ばれた目的地は、判定に使ったのと同じ

@@ -4,10 +4,15 @@ import type {
   NearbyPrepareRequestBody,
   NearbyPrepareResponseBody,
   NearbyProcessRequestBody,
-  NearbyResponseBody,
+  NearbyProcessResponseBody,
   PoiItem,
 } from "../types";
-import { buildNearbyQuery, NEARBY_POI_LIMIT, rankNearbyPois } from "../lib/nearby";
+import {
+  buildNearbyQuery,
+  NEARBY_POI_LIMIT,
+  NEARBY_ESCALATE_RADIUS_M,
+  rankNearbyPois,
+} from "../lib/nearby";
 import { toPoiItems } from "../lib/poi";
 import { parseOverpassResponse, OverpassError, OVERPASS_ENDPOINT } from "../lib/overpass";
 import { buildNearbyCacheKey, getCachedPois, putCachedPois } from "../lib/cache";
@@ -31,7 +36,9 @@ function isValidProcessRequest(body: unknown): body is NearbyProcessRequestBody 
     typeof b.lat === "number" &&
     typeof b.lon === "number" &&
     typeof b.excludeId === "string" &&
-    "overpassResponse" in b
+    "overpassResponse" in b &&
+    (b.parkingWideSearch === undefined || typeof b.parkingWideSearch === "boolean") &&
+    (b.nearbyStage === undefined || b.nearbyStage === "escalate")
   );
 }
 
@@ -73,7 +80,7 @@ app.post("/process", async (c) => {
     return c.json({ error: "invalid_request" }, 400);
   }
 
-  const { cacheKey, lat, lon, excludeId, overpassResponse } = body;
+  const { cacheKey, lat, lon, excludeId, overpassResponse, parkingWideSearch, nearbyStage } = body;
 
   let pois: PoiItem[];
   try {
@@ -86,10 +93,27 @@ app.post("/process", async (c) => {
     throw err;
   }
 
+  const ranked = rankNearbyPois(pois, lat, lon, excludeId, NEARBY_POI_LIMIT);
+
+  // 500m（初回）で0件だった場合のみ、1kmまで1回だけ拡張して再検索する
+  // （docs/plans/260830-070951-周辺情報500m空振り時1km拡張.md）。拡張後
+  // （nearbyStage==="escalate"）は件数に関わらずそのままキャッシュ・確定する。
+  if (ranked.length === 0 && nearbyStage !== "escalate") {
+    const response: NearbyProcessResponseBody = {
+      status: "need_fetch",
+      query: buildNearbyQuery(lat, lon, NEARBY_ESCALATE_RADIUS_M, parkingWideSearch ?? false),
+      endpoint: OVERPASS_ENDPOINT,
+      cacheKey,
+      nearbyStage: "escalate",
+    };
+    return c.json(response);
+  }
+
   await putCachedPois(c.env.CACHE, cacheKey, pois);
 
-  const response: NearbyResponseBody = {
-    pois: rankNearbyPois(pois, lat, lon, excludeId, NEARBY_POI_LIMIT),
+  const response: NearbyProcessResponseBody = {
+    status: "done",
+    pois: ranked,
     cacheHit: false,
     fetchedAt: new Date().toISOString(),
   };

@@ -11,23 +11,27 @@ export async function loadNearbyPois(store) {
   const parkingWideSearch = picked.category === "other" && state.parkingRequired === true;
 
   try {
-    const prepared = await prepareNearby({
+    // 500mで0件のとき1kmまで1回だけ拡張する場合があるため、既存カテゴリの検索と
+    // 同様、need_fetchが続く限りfetch→processを繰り返すループにする
+    // （docs/plans/260830-070951-周辺情報500m空振り時1km拡張.md）。
+    let result = await prepareNearby({
       lat: picked.lat,
       lon: picked.lon,
       excludeId: picked.id,
       parkingWideSearch,
     });
-
-    const result =
-      prepared.status === "done"
-        ? prepared
-        : await processNearby({
-            cacheKey: prepared.cacheKey,
-            lat: picked.lat,
-            lon: picked.lon,
-            excludeId: picked.id,
-            overpassResponse: await fetchOverpassDirect(prepared.endpoint, prepared.query),
-          });
+    while (result.status === "need_fetch") {
+      const overpassResponse = await fetchOverpassDirect(result.endpoint, result.query);
+      result = await processNearby({
+        cacheKey: result.cacheKey,
+        lat: picked.lat,
+        lon: picked.lon,
+        excludeId: picked.id,
+        overpassResponse,
+        parkingWideSearch,
+        nearbyStage: result.nearbyStage,
+      });
+    }
 
     store.setState({
       nearbyLoading: false,

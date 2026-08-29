@@ -117,6 +117,8 @@ export type NearbyPrepareResponseBody =
       query: string;
       endpoint: string;
       cacheKey: string;
+      // 初回（500m）で0件だった場合のみ使用。1kmへの拡張問い合わせであることを示す
+      nearbyStage?: "escalate";
     };
 
 export interface NearbyProcessRequestBody {
@@ -125,4 +127,10 @@ export interface NearbyProcessRequestBody {
   lon: number;
   excludeId: string;
   overpassResponse: unknown;
+  parkingWideSearch?: boolean;
+  nearbyStage?: "escalate";
 }
+
+// /processは、500mで0件だった場合に1kmへの拡張問い合わせへ進む必要があるため、
+// NearbyResponseBodyではなくNearbyPrepareResponseBody相当（need_fetch）を返すことがある
+export type NearbyProcessResponseBody = NearbyPrepareResponseBody;

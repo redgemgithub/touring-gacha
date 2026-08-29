@@ -86,11 +86,27 @@ export async function prepareNearby({ lat, lon, excludeId, parkingWideSearch }) 
   return res.json();
 }
 
-export async function processNearby({ cacheKey, lat, lon, excludeId, overpassResponse }) {
+export async function processNearby({
+  cacheKey,
+  lat,
+  lon,
+  excludeId,
+  overpassResponse,
+  parkingWideSearch,
+  nearbyStage,
+}) {
   const res = await fetch("/api/nearby/process", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cacheKey, lat, lon, excludeId, overpassResponse }),
+    body: JSON.stringify({
+      cacheKey,
+      lat,
+      lon,
+      excludeId,
+      overpassResponse,
+      parkingWideSearch,
+      nearbyStage,
+    }),
   });
   if (!res.ok) throw makeApiError(res, await res.json().catch(() => ({})));
   return res.json();
