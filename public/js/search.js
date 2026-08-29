@@ -8,7 +8,6 @@ export async function performSearch(store, { isReroll = false } = {}) {
     searching: true,
     searchError: null,
     view: "result",
-    decided: false,
     sheetExpanded: false,
     nearbyPois: [],
     nearbyLoading: false,

@@ -18,7 +18,6 @@ const store = createStore({
   picked: null,
   candidates: [],
   seenIds: [],
-  decided: false,
   sheetExpanded: false,
   nearbyPois: [],
   nearbyLoading: false,

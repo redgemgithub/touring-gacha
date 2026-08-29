@@ -87,17 +87,19 @@
       <p id="result-status" class="result-status" hidden></p>
       <div id="result-sheet" class="sheet" hidden>
         <div id="sheet-collapsed">
-          <p class="sheet-title" id="candidate-name"></p>
-          <p class="sheet-coords" id="candidate-coords"></p>
-          <p class="sheet-distance" id="candidate-distance"></p>
-          <button type="button" id="decide-button" class="primary-button">
-            ✓ この場所に決める
+          <button type="button" id="candidate-info-button" class="nearby-item nearby-item-destination">
+            <span class="nearby-item-icon">📍</span>
+            <span class="nearby-item-text">
+              <p class="nearby-item-name" id="candidate-name"></p>
+              <p class="nearby-item-subtitle" id="candidate-coords"></p>
+              <p class="nearby-item-subtitle" id="candidate-distance"></p>
+            </span>
+            <span class="nearby-item-chevron">›</span>
           </button>
-          <div class="sheet-actions">
-            <button type="button" id="reroll-button">↻ 別の場所</button>
-            <button type="button" id="copy-open-button">⧉ ナビ用情報</button>
-          </div>
-          <button type="button" id="nearby-expand-toggle" class="sheet-expand-toggle">
+          <button type="button" id="reroll-button" class="primary-button">
+            ↻ 再抽選
+          </button>
+          <button type="button" id="nearby-expand-toggle" class="sheet-expand-toggle sheet-expand-toggle-large">
             ⌃ 周辺のスポットを見る
           </button>
         </div>

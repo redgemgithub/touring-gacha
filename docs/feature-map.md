@@ -42,7 +42,7 @@
 | 現在地取得・距離／方角の表示整形（クライアント側） | `public/js/geo.js` | 済 | Phase 1 |
 | 条件設定画面（GPS・探索範囲・目的地種類「店/店以外」・店の種類選択） | `public/js/views/condition.js` | 済 | Phase 1、Phase 4-Aで「店以外」トグルを追加 |
 | 停車できる場所の条件UI | `public/js/views/condition.js` | 済 | Phase 4-A |
-| 結果地図画面（下部シート、決める/別の場所/ナビ用情報ボタン） | `public/js/views/result.js` | 済 | Phase 1、Phase 3で周辺情報表示・Phase 3.x でコピー処理を拡張 |
+| 結果地図画面（下部シート、目的地情報タップでコピー/再抽選ボタン） | `public/js/views/result.js` | 済 | Phase 1、Phase 3で周辺情報表示・Phase 3.xでコピー処理を拡張、2026-08-29に「決める」ボタン撤去・下部シート再構成（[decision](./decisions/260829-decide-button-removal.md)） |
 | 地図描画（MapLibre初期化、ピン、破線ルート、POIマーカー、フォーカスリング） | `public/js/components/map.js` | 済 | Phase 1、Phase 3で拡張 |
 | 周辺情報展開画面（POI一覧・地図フォーカス連動） | `public/js/views/result.js`（`sheet-expanded`部分）, `public/js/nearby.js` | 済 | Phase 3、Phase 4-Aで駐車場ワイド検索（停車場所条件との整合性）を追加 |
 | コピー項目設定（アプリ共通、緯度経度/名称/住所のチェックボックス） | `public/js/views/copy-modal.js`, `public/js/copy-preference.js` | 済 | Phase 1で「実行用モーダル」として新設、[decision](./decisions/260829-copy-preference.md)で「設定編集用」に役割変更 |
@@ -63,6 +63,7 @@
 | 探索範囲を帯検索にした経緯 | `docs/decisions/260829-search-radius-band.md` | 済 |
 | コピー方式をアプリ共通設定にした経緯 | `docs/decisions/260829-copy-preference.md` | 済 |
 | Phase 4-A分割・停車場所条件の判断経緯 | `docs/decisions/260829-phase4a-店以外タグ地点と停車場所.md` | 済 |
+| 「決める」ボタン撤去・下部シート再構成の経緯 | `docs/decisions/260829-decide-button-removal.md` | 済 |
 | 全体の実装順序 | `docs/roadmap.md` | 済 |
 | 各フェーズの計画・実行記録 | `docs/plans/*.md` | Phase 1〜4-A分済 |
 

@@ -205,39 +205,8 @@ body {
   margin-top: 12px;
 }
 
-.sheet-title {
-  font-weight: bold;
-  font-size: 1.1rem;
-  margin: 0 0 4px;
-}
-
-.sheet-coords,
-.sheet-distance {
-  color: var(--text-muted);
-  margin: 2px 0;
-}
-
-.sheet-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.sheet-actions button {
-  background: var(--panel);
-  border: 1px solid var(--panel-border);
-  color: var(--text);
-  border-radius: 10px;
-  padding: 12px;
-  cursor: pointer;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-#decide-button {
-  margin-top: 12px;
+#candidate-info-button {
+  margin-bottom: 12px;
 }
 
 .modal {
@@ -334,6 +303,13 @@ body {
   padding: 12px 0 0;
   cursor: pointer;
   text-align: center;
+}
+
+.sheet-expand-toggle-large {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--text);
+  padding: 14px 0 4px;
 }
 
 .sheet.expanded {

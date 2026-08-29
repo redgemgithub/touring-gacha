@@ -60,10 +60,14 @@ function buildNearbyItemElement({ name, subtitle, icon, active, extraClass }) {
   const nameEl = document.createElement("p");
   nameEl.className = "nearby-item-name";
   nameEl.textContent = name;
-  const subtitleEl = document.createElement("p");
-  subtitleEl.className = "nearby-item-subtitle";
-  subtitleEl.textContent = subtitle;
-  textEl.append(nameEl, subtitleEl);
+  textEl.appendChild(nameEl);
+  const subtitleLines = Array.isArray(subtitle) ? subtitle : [subtitle];
+  for (const line of subtitleLines) {
+    const subtitleEl = document.createElement("p");
+    subtitleEl.className = "nearby-item-subtitle";
+    subtitleEl.textContent = line;
+    textEl.appendChild(subtitleEl);
+  }
   const chevronEl = document.createElement("span");
   chevronEl.className = "nearby-item-chevron";
   chevronEl.textContent = "›";
@@ -80,11 +84,10 @@ export function initResultView(store) {
   const nameEl = document.getElementById("candidate-name");
   const coordsEl = document.getElementById("candidate-coords");
   const distanceEl = document.getElementById("candidate-distance");
-  const decideButton = document.getElementById("decide-button");
+  const candidateInfoButton = document.getElementById("candidate-info-button");
   const backButton = document.getElementById("back-button");
   const recenterButton = document.getElementById("recenter-button");
   const rerollButton = document.getElementById("reroll-button");
-  const copyOpenButton = document.getElementById("copy-open-button");
   const nearbyExpandToggle = document.getElementById("nearby-expand-toggle");
   const nearbyCollapseButton = document.getElementById("nearby-collapse-button");
   const nearbyDestinationItemEl = document.getElementById("nearby-destination-item");
@@ -101,20 +104,16 @@ export function initResultView(store) {
     if (location) recenter(location.lat, location.lon);
   });
 
-  decideButton.addEventListener("click", () => {
-    store.setState({ decided: true });
-  });
-
   rerollButton.addEventListener("click", () => {
     performSearch(store, { isReroll: true });
   });
 
-  copyOpenButton.addEventListener("click", () => {
+  candidateInfoButton.addEventListener("click", () => {
     const { picked } = store.getState();
     if (picked) copyItem(picked);
   });
 
-  attachLongPress(copyOpenButton, {
+  attachLongPress(candidateInfoButton, {
     onLongPress: () => {
       const { picked } = store.getState();
       if (picked) copyItem(picked, { forceLatLon: true });
@@ -168,11 +167,18 @@ export function initResultView(store) {
   }
 
   function renderNearbySection(state) {
-    const { picked } = state;
+    const { picked, location } = state;
     nearbyDestinationItemEl.innerHTML = "";
+    const coordsText = `${picked.lat.toFixed(4)}, ${picked.lon.toFixed(4)}`;
+    const subtitle = [coordsText];
+    if (location) {
+      const distanceKm = haversineDistanceKm(location.lat, location.lon, picked.lat, picked.lon);
+      const direction = bearingLabel(location.lat, location.lon, picked.lat, picked.lon);
+      subtitle.push(`現在地から ${distanceKm.toFixed(1)}km ${direction}`);
+    }
     const destBtn = buildNearbyItemElement({
       name: (picked.name ?? "(名称不明)") + "（目的地）",
-      subtitle: `${picked.lat.toFixed(4)}, ${picked.lon.toFixed(4)}`,
+      subtitle,
       icon: "📍",
       active: false,
       extraClass: "nearby-item-destination",
@@ -268,8 +274,6 @@ export function initResultView(store) {
       const direction = bearingLabel(location.lat, location.lon, picked.lat, picked.lon);
       distanceEl.textContent = `現在地から ${distanceKm.toFixed(1)}km ${direction}`;
     }
-
-    decideButton.textContent = state.decided ? "✓ 決定済み" : "✓ この場所に決める";
 
     if (state.sheetExpanded) {
       renderNearbySection(state);
