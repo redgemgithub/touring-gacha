@@ -10,11 +10,12 @@ export function buildCacheKey(
   radiusKm: number,
   category: ShopCategory,
 ): string {
-  // v2: 探索範囲を「円内」から「帯」に変更した際にバージョンを上げた
-  // （docs/decisions/260829-cache-key-versioning.md）。以後、候補の絞り込み
-  // ロジックを変更する際は必ずこのバージョンを上げること。
+  // v2: 探索範囲を「円内」から「帯」に変更した際にバージョンを上げた。
+  // v3: 帯の計算式を変更（隣接選択肢との中間値を境界にし、中抜けを解消）した際に上げた
+  // （docs/decisions/260829-search-radius-band-gapless.md）。以後、候補の絞り込み
+  // ロジックを変更する際は必ずこのバージョンを上げること（docs/decisions/260829-cache-key-versioning.md）。
   const bucket = bucketCoordinate(lat, lon, radiusKm);
-  return `ov:v2:${category}:${radiusKm}:${bucket.lat.toFixed(4)}:${bucket.lon.toFixed(4)}`;
+  return `ov:v3:${category}:${radiusKm}:${bucket.lat.toFixed(4)}:${bucket.lon.toFixed(4)}`;
 }
 
 export async function getCachedCandidates(

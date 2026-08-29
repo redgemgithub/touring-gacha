@@ -88,19 +88,29 @@ export function distanceToPolylineMeters(point: LatLon, polyline: LatLon[]): num
 
 export const RADIUS_BAND_TOLERANCE = 0.1;
 export const RADIUS_BAND_MIN_MARGIN_KM = 5;
+// UIの探索範囲チップの値。中抜けのない帯を作るため隣接する選択肢の値を使う
+// （docs/decisions/260829-search-radius-band-gapless.md）。
+const RADIUS_STEPS = [10, 30, 50, 100];
 
 /**
  * 探索範囲は「指定距離以内」ではなく「指定距離に近い帯」として扱う
- * （docs/decisions/260829-search-radius-band.md）。マージンは指定距離の10%と
- * 固定下限5kmの大きい方とし、小さい指定距離での帯の狭すぎを防ぐ。
+ * （docs/decisions/260829-search-radius-band.md）。隣り合う選択肢どうしの境界は
+ * 2つの数値の中間値にし、選択肢の間に検索できない「中抜け」ができないようにする。
+ * 両端（最小・最大の選択肢）だけ、指定距離の10%と固定下限5kmの大きい方をマージンとして使う。
  */
 export function computeDistanceBand(radiusKm: number): {
   innerKm: number;
   outerKm: number;
   marginKm: number;
 } {
+  const idx = RADIUS_STEPS.indexOf(radiusKm);
   const marginKm = Math.max(radiusKm * RADIUS_BAND_TOLERANCE, RADIUS_BAND_MIN_MARGIN_KM);
-  return { innerKm: radiusKm - marginKm, outerKm: radiusKm + marginKm, marginKm };
+  const innerKm = idx <= 0 ? radiusKm - marginKm : (RADIUS_STEPS[idx - 1] + radiusKm) / 2;
+  const outerKm =
+    idx === -1 || idx === RADIUS_STEPS.length - 1
+      ? radiusKm + marginKm
+      : (radiusKm + RADIUS_STEPS[idx + 1]) / 2;
+  return { innerKm, outerKm, marginKm };
 }
 
 export function bucketCoordinate(
