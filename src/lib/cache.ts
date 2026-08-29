@@ -24,6 +24,18 @@ export function buildCacheKey(
   return `ov:v3:${category}:${radiusKm}:${bucket.lat.toFixed(4)}:${bucket.lon.toFixed(4)}${parkingSegment}`;
 }
 
+// 交差点候補専用のキャッシュキー。現在地・探索範囲ではなく、仮地点自身の座標を
+// バケット化する。ランダム性の源（仮地点の乱数決定）がキャッシュキーの外側に
+// あると、同じ現在地・探索範囲での検索・再抽選が同じキャッシュを共有し続け、
+// 実質的に毎回似た結果しか出なくなる不具合になる
+// （docs/plans/260830-073043-交差点キャッシュを仮地点ベースに変更.md）。
+const INTERSECTION_CACHE_BUCKET_KM = 1;
+
+export function buildIntersectionCacheKey(anchorLat: number, anchorLon: number): string {
+  const bucket = bucketCoordinate(anchorLat, anchorLon, INTERSECTION_CACHE_BUCKET_KM);
+  return `int:v1:${bucket.lat.toFixed(4)}:${bucket.lon.toFixed(4)}`;
+}
+
 export async function getCachedCandidates(
   cache: Env["CACHE"],
   key: string,

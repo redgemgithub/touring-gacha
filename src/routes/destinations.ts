@@ -28,7 +28,12 @@ import {
   INTERSECTION_ESCALATE_RADIUS_M,
   INTERSECTION_PROBE_MIN_COUNT,
 } from "../lib/intersection";
-import { buildCacheKey, getCachedCandidates, putCachedCandidates } from "../lib/cache";
+import {
+  buildCacheKey,
+  buildIntersectionCacheKey,
+  getCachedCandidates,
+  putCachedCandidates,
+} from "../lib/cache";
 import { computeDistanceBand, haversineDistanceKm, destinationPoint } from "../lib/geo";
 
 const ALLOWED_RADIUS_KM = [10, 30, 50, 100];
@@ -107,6 +112,46 @@ app.post("/prepare", async (c) => {
   }
 
   const { lat, lon, radiusKm, category, parkingRequired, excludeIds } = body;
+
+  if (category === "intersection") {
+    // 仮地点は検索のたび（再抽選含む）に必ず新しく引き直す。キャッシュは現在地・
+    // 探索範囲ではなく仮地点自身の座標でバケット化し、たまたま近い仮地点を
+    // 再び引いた場合だけ再利用する（ランダム性の源＝仮地点の乱数決定が、
+    // キャッシュキーの外側で共有されてしまう不具合を避けるため。詳細は
+    // docs/plans/260830-073043-交差点キャッシュを仮地点ベースに変更.md）
+    const anchor = destinationPoint(lat, lon, Math.random() * 360, radiusKm);
+    const intersectionCacheKey = buildIntersectionCacheKey(anchor.lat, anchor.lon);
+    const cachedRaw = await getCachedCandidates(c.env.CACHE, intersectionCacheKey);
+
+    if (cachedRaw) {
+      // キャッシュには帯フィルタ前（高速道路除外後）のデータを保存しているため、
+      // 今回の現在地・探索範囲での帯フィルタをその場で適用する
+      const { innerKm, outerKm } = computeDistanceBand(radiusKm);
+      const bandFiltered = cachedRaw.filter((cand) => {
+        const distKm = haversineDistanceKm(lat, lon, cand.lat, cand.lon);
+        return distKm >= innerKm && distKm <= outerKm;
+      });
+      const response: PrepareResponseBody = {
+        status: "done",
+        picked: pickCandidate(bandFiltered, excludeIds ?? []),
+        candidates: bandFiltered,
+        cacheHit: true,
+        searchedAt: new Date().toISOString(),
+      };
+      return c.json(response);
+    }
+
+    const response: PrepareResponseBody = {
+      status: "need_fetch",
+      query: buildIntersectionQuery(anchor.lat, anchor.lon, INTERSECTION_PROBE_RADIUS_M),
+      endpoint: OVERPASS_ENDPOINT,
+      cacheKey: intersectionCacheKey,
+      intersectionStage: "probe",
+      anchor,
+    };
+    return c.json(response);
+  }
+
   const cacheKey = buildCacheKey(lat, lon, radiusKm, category, parkingRequired);
   const cached = await getCachedCandidates(c.env.CACHE, cacheKey);
 
@@ -117,22 +162,6 @@ app.post("/prepare", async (c) => {
       candidates: cached,
       cacheHit: true,
       searchedAt: new Date().toISOString(),
-    };
-    return c.json(response);
-  }
-
-  if (category === "intersection") {
-    // 仮地点（現在地から乱数の方角×指定距離ちょうどの点）を決め、まずプローブ
-    // （100m）から開始する。probe/escalateの2段階については
-    // docs/plans/260830-060923-phase4b交差点検出実装.md 参照
-    const anchor = destinationPoint(lat, lon, Math.random() * 360, radiusKm);
-    const response: PrepareResponseBody = {
-      status: "need_fetch",
-      query: buildIntersectionQuery(anchor.lat, anchor.lon, INTERSECTION_PROBE_RADIUS_M),
-      endpoint: OVERPASS_ENDPOINT,
-      cacheKey,
-      intersectionStage: "probe",
-      anchor,
     };
     return c.json(response);
   }
@@ -201,8 +230,10 @@ app.post("/process", async (c) => {
         return c.json(response);
       }
 
-      // 拡張（1km）まで見ても見つからなければ、それ以上は探さずそのまま0件として扱う
-      await putCachedCandidates(c.env.CACHE, cacheKey, bandFiltered);
+      // 拡張（1km）まで見ても見つからなければ、それ以上は探さずそのまま0件として扱う。
+      // キャッシュには帯フィルタ前（高速道路除外後）のデータを保存する。異なる
+      // 現在地・探索範囲から同じ仮地点付近を再利用する場合でも正しく動くようにするため
+      await putCachedCandidates(c.env.CACHE, cacheKey, nonHighwayCandidates);
       const response: ProcessResponseBody = {
         status: "done",
         picked: pickCandidate(bandFiltered, excludeIds ?? []),
