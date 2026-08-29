@@ -9,6 +9,11 @@ export const INTERSECTION_DEGREE_THRESHOLD = 3;
 // 実装後、実データで数件目視確認して妥当性を判断する
 // （docs/plans/260830-060923-phase4b交差点検出実装.md）。
 export const INTERSECTION_PROBE_MIN_COUNT = 5;
+// 仮地点が完全な空振り（プローブ・拡張とも道路データ0件、海上等の可能性）だった
+// 場合に、内部で別の方角の仮地点を引き直す上限回数。距離は変えず方角だけ
+// 引き直すため、探索範囲を勝手に広げない方針とは矛盾しない
+// （docs/plans/260830-075848-交差点仮地点の海上ハズレを内部リトライ.md）。
+export const INTERSECTION_MAX_ANCHOR_ATTEMPTS = 2;
 const HIGHWAY_SEARCH_BUFFER_M = 200;
 const MAX_WAY_ELEMENTS = 20000;
 const MAX_NODE_ELEMENTS = 60000;

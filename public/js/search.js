@@ -41,6 +41,7 @@ export async function performSearch(store, { isReroll = false } = {}) {
         parkingRequired: state.parkingRequired,
         intersectionStage: result.intersectionStage,
         anchor: result.anchor,
+        anchorAttempt: result.anchorAttempt,
         excludeIds,
         overpassResponse,
         lat: state.location.lat,

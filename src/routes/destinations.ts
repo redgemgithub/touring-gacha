@@ -27,6 +27,7 @@ import {
   INTERSECTION_PROBE_RADIUS_M,
   INTERSECTION_ESCALATE_RADIUS_M,
   INTERSECTION_PROBE_MIN_COUNT,
+  INTERSECTION_MAX_ANCHOR_ATTEMPTS,
 } from "../lib/intersection";
 import {
   buildCacheKey,
@@ -87,6 +88,7 @@ function isValidProcessRequest(body: unknown): body is ProcessRequestBody {
     "overpassResponse" in b &&
     (b.intersectionStage === undefined || isValidIntersectionStage(b.intersectionStage)) &&
     (b.anchor === undefined || isValidAnchor(b.anchor)) &&
+    (b.anchorAttempt === undefined || typeof b.anchorAttempt === "number") &&
     typeof b.lat === "number" &&
     typeof b.lon === "number" &&
     typeof b.radiusKm === "number" &&
@@ -148,6 +150,7 @@ app.post("/prepare", async (c) => {
       cacheKey: intersectionCacheKey,
       intersectionStage: "probe",
       anchor,
+      anchorAttempt: 1,
     };
     return c.json(response);
   }
@@ -193,12 +196,14 @@ app.post("/process", async (c) => {
     radiusKm,
     intersectionStage,
     anchor,
+    anchorAttempt,
   } = body;
 
   if (category === "intersection") {
     if (!intersectionStage || !anchor) {
       return c.json({ error: "invalid_request" }, 400);
     }
+    const currentAttempt = anchorAttempt ?? 1;
     try {
       const parsed = parseOverpassResponse(overpassResponse);
       const highwayElements = parsed.elements.filter((el) => Array.isArray(el.geometry));
@@ -226,13 +231,55 @@ app.post("/process", async (c) => {
           cacheKey,
           intersectionStage: "escalate",
           anchor,
+          anchorAttempt: currentAttempt,
         };
         return c.json(response);
       }
 
-      // 拡張（1km）まで見ても見つからなければ、それ以上は探さずそのまま0件として扱う。
-      // キャッシュには帯フィルタ前（高速道路除外後）のデータを保存する。異なる
-      // 現在地・探索範囲から同じ仮地点付近を再利用する場合でも正しく動くようにするため
+      // 拡張（1km）まで見ても完全な空振り（道路データ0件、海上等の可能性）で、
+      // まだ引き直し回数の上限に達していなければ、別の方角の仮地点で最初から
+      // やり直す（距離は変えず方角だけ引き直す）
+      if (
+        intersectionStage === "escalate" &&
+        nonHighwayCandidates.length === 0 &&
+        currentAttempt < INTERSECTION_MAX_ANCHOR_ATTEMPTS
+      ) {
+        const newAnchor = destinationPoint(lat, lon, Math.random() * 360, radiusKm);
+        const newCacheKey = buildIntersectionCacheKey(newAnchor.lat, newAnchor.lon);
+        const newCachedRaw = await getCachedCandidates(c.env.CACHE, newCacheKey);
+
+        if (newCachedRaw) {
+          const { innerKm: newInnerKm, outerKm: newOuterKm } = computeDistanceBand(radiusKm);
+          const newBandFiltered = newCachedRaw.filter((cand) => {
+            const distKm = haversineDistanceKm(lat, lon, cand.lat, cand.lon);
+            return distKm >= newInnerKm && distKm <= newOuterKm;
+          });
+          const response: ProcessResponseBody = {
+            status: "done",
+            picked: pickCandidate(newBandFiltered, excludeIds ?? []),
+            candidates: newBandFiltered,
+            cacheHit: true,
+            searchedAt: new Date().toISOString(),
+          };
+          return c.json(response);
+        }
+
+        const response: ProcessResponseBody = {
+          status: "need_fetch",
+          query: buildIntersectionQuery(newAnchor.lat, newAnchor.lon, INTERSECTION_PROBE_RADIUS_M),
+          endpoint: OVERPASS_ENDPOINT,
+          cacheKey: newCacheKey,
+          intersectionStage: "probe",
+          anchor: newAnchor,
+          anchorAttempt: currentAttempt + 1,
+        };
+        return c.json(response);
+      }
+
+      // 拡張（1km）まで見ても見つからない、または引き直し上限に達した場合は、
+      // それ以上は探さずそのまま0件として扱う。キャッシュには帯フィルタ前
+      // （高速道路除外後）のデータを保存する。異なる現在地・探索範囲から同じ
+      // 仮地点付近を再利用する場合でも正しく動くようにするため
       await putCachedCandidates(c.env.CACHE, cacheKey, nonHighwayCandidates);
       const response: ProcessResponseBody = {
         status: "done",

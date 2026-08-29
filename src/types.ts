@@ -50,6 +50,9 @@ export type PrepareResponseBody =
       // category==="intersection"のときのみ使用
       intersectionStage?: IntersectionStage;
       anchor?: IntersectionAnchor;
+      // "intersection"のみ使用。仮地点を何回引き直したか（1始まり）。海上等で
+      // 完全な空振りだった場合の内部リトライ上限判定に使う
+      anchorAttempt?: number;
     };
 
 export interface ProcessRequestBody {
@@ -66,6 +69,7 @@ export interface ProcessRequestBody {
   // category==="intersection"のときのみ使用
   intersectionStage?: IntersectionStage;
   anchor?: IntersectionAnchor;
+  anchorAttempt?: number;
 }
 
 // /processは、"intersection"カテゴリのプローブ→拡張の2段階目に進む必要がある場合、
