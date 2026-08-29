@@ -18,6 +18,7 @@ import {
 import { toCandidates } from "../lib/candidate";
 import { excludeNearHighways } from "../lib/highway-filter";
 import { buildCacheKey, getCachedCandidates, putCachedCandidates } from "../lib/cache";
+import { computeDistanceBand, haversineDistanceKm } from "../lib/geo";
 
 const ALLOWED_RADIUS_KM = [10, 30, 50, 100];
 const ALLOWED_CATEGORIES: ShopCategory[] = ["food_rest", "shopping_other"];
@@ -44,7 +45,11 @@ function isValidProcessRequest(body: unknown): body is ProcessRequestBody {
     typeof b.category === "string" &&
     ALLOWED_CATEGORIES.includes(b.category as ShopCategory) &&
     (b.excludeIds === undefined || Array.isArray(b.excludeIds)) &&
-    "overpassResponse" in b
+    "overpassResponse" in b &&
+    typeof b.lat === "number" &&
+    typeof b.lon === "number" &&
+    typeof b.radiusKm === "number" &&
+    ALLOWED_RADIUS_KM.includes(b.radiusKm)
   );
 }
 
@@ -96,7 +101,7 @@ app.post("/process", async (c) => {
     return c.json({ error: "invalid_request" }, 400);
   }
 
-  const { cacheKey, category, excludeIds, overpassResponse } = body;
+  const { cacheKey, category, excludeIds, overpassResponse, lat, lon, radiusKm } = body;
 
   let candidates: Candidate[];
   try {
@@ -104,7 +109,19 @@ app.post("/process", async (c) => {
     const candidateElements = parsed.elements.filter((el) => !el.geometry);
     const highwayElements = parsed.elements.filter((el) => Array.isArray(el.geometry));
     const rawCandidates = toCandidates(candidateElements, category);
-    candidates = excludeNearHighways(rawCandidates, highwayElements, HIGHWAY_EXCLUSION_BUFFER_M);
+    const nonHighwayCandidates = excludeNearHighways(
+      rawCandidates,
+      highwayElements,
+      HIGHWAY_EXCLUSION_BUFFER_M,
+    );
+    // 探索範囲は「指定距離以内」ではなく「指定距離に近い帯」として扱う
+    // （docs/decisions/260829-search-radius-band.md）。範囲外に見つからなくても
+    // 自動的に範囲を広げず、そのまま0件として扱う。
+    const { innerKm, outerKm } = computeDistanceBand(radiusKm);
+    candidates = nonHighwayCandidates.filter((cand) => {
+      const distKm = haversineDistanceKm(lat, lon, cand.lat, cand.lon);
+      return distKm >= innerKm && distKm <= outerKm;
+    });
   } catch (err) {
     if (err instanceof OverpassError) {
       return c.json({ error: "overpass_error" }, 502);

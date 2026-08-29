@@ -43,4 +43,8 @@ export interface ProcessRequestBody {
   category: ShopCategory;
   excludeIds: string[];
   overpassResponse: unknown;
+  // 探索範囲の帯フィルタ（docs/decisions/260829-search-radius-band.md）に必要
+  lat: number;
+  lon: number;
+  radiusKm: number;
 }

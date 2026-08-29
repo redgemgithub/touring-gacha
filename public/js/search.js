@@ -32,6 +32,9 @@ export async function performSearch(store, { isReroll = false } = {}) {
         category: state.category,
         excludeIds,
         overpassResponse,
+        lat: state.location.lat,
+        lon: state.location.lon,
+        radiusKm: state.radiusKm,
       });
     }
 

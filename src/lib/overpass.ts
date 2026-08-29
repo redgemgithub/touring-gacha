@@ -1,4 +1,5 @@
 import type { ShopCategory } from "../types";
+import { computeDistanceBand } from "./geo";
 
 export const OVERPASS_ENDPOINT = "https://overpass-api.de/api/interpreter";
 const EXCLUDED_HIGHWAY_TYPES = ["motorway", "motorway_link", "trunk", "trunk_link"];
@@ -37,6 +38,10 @@ export interface OverpassRawResponse {
  * このクエリはCloudflare Workers（サーバー）ではなくブラウザから直接Overpassへ
  * 送信される（docs/decisions/260829-overpass-client-side-fetch.md）。ここではクエリ
  * 文字列の組み立てのみ行い、実際のfetchはクライアント側が行う。
+ *
+ * 探索範囲は「指定距離以内」ではなく「指定距離に近い帯」として扱う
+ * （docs/decisions/260829-search-radius-band.md）。ここでは帯の外側境界までを
+ * Overpassに問い合わせ、内側境界での絞り込みは呼び出し側（destinations.ts）で行う。
  */
 export function buildOverpassQuery(
   lat: number,
@@ -44,7 +49,8 @@ export function buildOverpassQuery(
   radiusKm: number,
   category: ShopCategory,
 ): string {
-  const radiusM = Math.round(radiusKm * 1000);
+  const { outerKm } = computeDistanceBand(radiusKm);
+  const radiusM = Math.round(outerKm * 1000);
   const highwayRadiusM = radiusM + HIGHWAY_SEARCH_BUFFER_M;
   const highwayRegex = EXCLUDED_HIGHWAY_TYPES.join("|");
   const candStatements = CATEGORY_TAG_FILTERS[category]

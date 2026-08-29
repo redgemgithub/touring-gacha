@@ -6,6 +6,10 @@
 
 Phase 1実装済み: 目的地種別「店」（食事・休憩／買い物・その他）に限定した、条件設定→Overpass検索→地図表示→再抽選→ナビ用情報コピーの一気通貫フローが動作する（`wrangler dev` + 実ブラウザで疎通確認済み）。目的地種別「店以外」・周辺情報展開画面は未実装。詳細は [docs/plans/260828-163014-phase1-店タイプ検索実装.md](./docs/plans/260828-163014-phase1-店タイプ検索実装.md) を参照。
 
+## 探索範囲の考え方
+
+探索範囲は「指定距離**以内**」ではなく「指定距離**に近い帯**」で候補を探す（例: 50km指定なら45〜55km）。指定した距離を走ることそのものがこのアプリの目的のため。帯の範囲内に候補が見つからない場合は、範囲を自動的に広げず「見つからなかった」と伝える。詳細: [docs/decisions/260829-search-radius-band.md](./docs/decisions/260829-search-radius-band.md)
+
 ## 想定スタック
 
 - Cloudflare Workers（[Hono](https://github.com/honojs/hono)採用） + Workers Static Assets（バンドラーなし）
@@ -57,7 +61,7 @@ touring-gacha/
     ├── types.ts
     ├── routes/
     │   ├── config.ts       # GET /api/config （MapTilerキー配布）
-    │   └── destinations.ts # POST /api/destinations/search
+    │   └── destinations.ts # POST /api/destinations/prepare, /process
     └── lib/
         ├── overpass.ts
         ├── candidate.ts

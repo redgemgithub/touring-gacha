@@ -44,11 +44,19 @@ export async function fetchOverpassDirect(endpoint, query) {
   return res.json();
 }
 
-export async function processSearch({ cacheKey, category, excludeIds, overpassResponse }) {
+export async function processSearch({
+  cacheKey,
+  category,
+  excludeIds,
+  overpassResponse,
+  lat,
+  lon,
+  radiusKm,
+}) {
   const res = await fetch("/api/destinations/process", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cacheKey, category, excludeIds, overpassResponse }),
+    body: JSON.stringify({ cacheKey, category, excludeIds, overpassResponse, lat, lon, radiusKm }),
   });
   if (!res.ok) throw makeApiError(res, await res.json().catch(() => ({})));
   return res.json();

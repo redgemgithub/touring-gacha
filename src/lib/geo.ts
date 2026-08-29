@@ -86,6 +86,23 @@ export function distanceToPolylineMeters(point: LatLon, polyline: LatLon[]): num
   return min;
 }
 
+export const RADIUS_BAND_TOLERANCE = 0.1;
+export const RADIUS_BAND_MIN_MARGIN_KM = 5;
+
+/**
+ * 探索範囲は「指定距離以内」ではなく「指定距離に近い帯」として扱う
+ * （docs/decisions/260829-search-radius-band.md）。マージンは指定距離の10%と
+ * 固定下限5kmの大きい方とし、小さい指定距離での帯の狭すぎを防ぐ。
+ */
+export function computeDistanceBand(radiusKm: number): {
+  innerKm: number;
+  outerKm: number;
+  marginKm: number;
+} {
+  const marginKm = Math.max(radiusKm * RADIUS_BAND_TOLERANCE, RADIUS_BAND_MIN_MARGIN_KM);
+  return { innerKm: radiusKm - marginKm, outerKm: radiusKm + marginKm, marginKm };
+}
+
 export function bucketCoordinate(
   lat: number,
   lon: number,

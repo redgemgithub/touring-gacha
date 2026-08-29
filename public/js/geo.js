@@ -31,6 +31,17 @@ export function haversineDistanceKm(lat1, lon1, lat2, lon2) {
   return EARTH_RADIUS_KM * c;
 }
 
+const RADIUS_BAND_TOLERANCE = 0.1;
+const RADIUS_BAND_MIN_MARGIN_KM = 5;
+
+// 探索範囲は「指定距離以内」ではなく「指定距離に近い帯」として扱う
+// （docs/decisions/260829-search-radius-band.md）。サーバー側 geo.ts の
+// computeDistanceBand と同じロジック（バンドラーなし構成のため別実装）。
+export function computeDistanceBand(radiusKm) {
+  const marginKm = Math.max(radiusKm * RADIUS_BAND_TOLERANCE, RADIUS_BAND_MIN_MARGIN_KM);
+  return { innerKm: radiusKm - marginKm, outerKm: radiusKm + marginKm, marginKm };
+}
+
 const BEARING_LABELS = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"];
 
 export function bearingLabel(fromLat, fromLon, toLat, toLon) {

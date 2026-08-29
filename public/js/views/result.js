@@ -1,4 +1,4 @@
-import { haversineDistanceKm, bearingLabel } from "../geo.js";
+import { haversineDistanceKm, bearingLabel, computeDistanceBand } from "../geo.js";
 import { performSearch } from "../search.js";
 import { initMap, setUserLocation, showCandidate, recenter } from "../components/map.js";
 import { openCopyModal } from "./copy-modal.js";
@@ -54,7 +54,8 @@ export function initResultView(store) {
   function render(state) {
     if (state.view !== "result") return;
 
-    radiusLabel.textContent = `探索範囲 ${state.radiusKm}km 圏内`;
+    const band = computeDistanceBand(state.radiusKm);
+    radiusLabel.textContent = `探索範囲 ${band.innerKm.toFixed(0)}〜${band.outerKm.toFixed(0)}km`;
     ensureMap(state);
 
     if (state.searching) {
