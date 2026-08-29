@@ -89,6 +89,12 @@ body {
   margin: -4px 0 8px;
 }
 
+/* チップ群の下に置く注記（field-labelの直後ではない）は、詰まって見えないよう
+   上方向の余白を空ける */
+#parking-field .field-note {
+  margin-top: 8px;
+}
+
 .chip-group {
   display: flex;
   gap: 8px;
