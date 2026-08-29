@@ -48,6 +48,7 @@
 | コピー項目設定（アプリ共通、緯度経度/名称/住所のチェックボックス） | `public/js/views/copy-modal.js`, `public/js/copy-preference.js` | 済 | Phase 1で「実行用モーダル」として新設、[decision](./decisions/260829-copy-preference.md)で「設定編集用」に役割変更 |
 | 目的地・周辺POIのコピー実行（設定に従い直接コピー） | `public/js/views/result.js`（`copyItem`） | 済 | 同上 |
 | 短時間通知（コピー完了トースト） | `public/js/toast.js` | 済 | 同上 |
+| 長押しによる緯度経度の強制コピー（設定を無視） | `public/js/long-press.js`, `public/js/views/result.js`（`copyItem`の`forceLatLon`） | 済 | Phase 3.x、[decision](./decisions/260829-copy-preference.md)の追記部分 |
 
 ## インフラ・設定・ドキュメント
 

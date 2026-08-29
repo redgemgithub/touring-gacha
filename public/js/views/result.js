@@ -13,13 +13,14 @@ import {
 import { loadNearbyPois } from "../nearby.js";
 import { formatCopyText } from "../copy-preference.js";
 import { showToast } from "../toast.js";
+import { attachLongPress } from "../long-press.js";
 
-async function copyItem(item) {
-  const text = formatCopyText(item);
+async function copyItem(item, { forceLatLon = false } = {}) {
+  const text = forceLatLon ? `${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}` : formatCopyText(item);
   if (navigator.clipboard?.writeText) {
     try {
       await navigator.clipboard.writeText(text);
-      showToast("コピーしました");
+      showToast(forceLatLon ? "緯度経度をコピーしました" : "コピーしました");
     } catch {
       // クリップボードへのアクセスが拒否された場合等は何もしない
     }
@@ -113,6 +114,13 @@ export function initResultView(store) {
     if (picked) copyItem(picked);
   });
 
+  attachLongPress(copyOpenButton, {
+    onLongPress: () => {
+      const { picked } = store.getState();
+      if (picked) copyItem(picked, { forceLatLon: true });
+    },
+  });
+
   nearbyExpandToggle.addEventListener("click", () => {
     store.setState({ sheetExpanded: true });
     loadNearbyPois(store);
@@ -176,6 +184,7 @@ export function initResultView(store) {
         store.setState({ focusedPoiId: null });
       }
     });
+    attachLongPress(destBtn, { onLongPress: () => copyItem(picked, { forceLatLon: true }) });
     nearbyDestinationItemEl.appendChild(destBtn);
 
     if (state.nearbyLoading) {
@@ -211,6 +220,7 @@ export function initResultView(store) {
           store.setState({ focusedPoiId: poi.id });
         }
       });
+      attachLongPress(item, { onLongPress: () => copyItem(poi, { forceLatLon: true }) });
       nearbyPoiListEl.appendChild(item);
     }
   }

@@ -32,7 +32,8 @@
 - なぜPhase 2の次か（提案理由）: Phase 1で作った基盤（Overpass連携・地図表示・状態管理）の上に、既存の枠組みを拡張するだけで実現できる機能であり、新規性の高いドメインロジック（Phase 4の交差点判定等）より先に着手する方がリスクが低いと考えた
 - 対応する要件: docs/requirements.md 7(周辺情報表示)
 - 実装完了後、周辺POIを選択できても情報をコピーできないという指摘を受け、コピーの仕組み自体を見直した（都度選択のモーダルから、アプリ全体で1回設定する方式へ変更。[docs/decisions/260829-copy-preference.md](./decisions/260829-copy-preference.md)）
-- 記録: [docs/plans/260829-112551-phase3-周辺情報表示.md](./plans/260829-112551-phase3-周辺情報表示.md)、[docs/plans/260829-121720-コピー項目設定と周辺POIコピー.md](./plans/260829-121720-コピー項目設定と周辺POIコピー.md)
+- 本番運用で、コピー結果が空になる問題・探索範囲帯の中抜け・チェーン店名だけでは地点を特定できない問題が見つかり、Phase 4着手前に追加対応した（[docs/decisions/260829-search-radius-band-gapless.md](./decisions/260829-search-radius-band-gapless.md)、[docs/decisions/260829-copy-preference.md](./decisions/260829-copy-preference.md)の追記部分）
+- 記録: [docs/plans/260829-112551-phase3-周辺情報表示.md](./plans/260829-112551-phase3-周辺情報表示.md)、[docs/plans/260829-121720-コピー項目設定と周辺POIコピー.md](./plans/260829-121720-コピー項目設定と周辺POIコピー.md)、[docs/plans/260829-191156-フィードバック対応と要件定義注意点.md](./plans/260829-191156-フィードバック対応と要件定義注意点.md)、[docs/plans/260829-193713-長押しで緯度経度強制コピー.md](./plans/260829-193713-長押しで緯度経度強制コピー.md)
 
 ### Phase 4（案）: 目的地種別「店以外」＋ 停車できる場所条件 — 未着手
 
