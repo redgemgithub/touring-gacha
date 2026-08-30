@@ -4,7 +4,7 @@
 
 ## 現状のステータス
 
-Phase 1〜4-B実装済み・本番運用中（`https://touring-gacha.redgem.workers.dev`）。
+Phase 1〜5（ロードマップ全体）実装済み・本番運用中（[https://touring-gacha.redgem.workers.dev](https://touring-gacha.redgem.workers.dev)）。
 
 - 目的地種別は「スポット（店）」「スポット（店以外）」「交差点」の3種類から選べる
   - スポット（店）: 食事・休憩／買い物・その他
@@ -13,7 +13,7 @@ Phase 1〜4-B実装済み・本番運用中（`https://touring-gacha.redgem.work
 - 条件設定→Overpass検索→地図表示→再抽選→ナビ用情報コピー（対象の行をタップでコピー、長押しで緯度経度を強制コピー）の一気通貫フローが動作する
 - 周辺情報展開画面（画面遷移なしで目的地本体＋近くのPOI一覧を表示）も実装済み
 
-進行中の作業・全体像は [docs/roadmap.md](./docs/roadmap.md)、機能とソースの対応は [docs/feature-map.md](./docs/feature-map.md) を参照。現在はPhase 5（仕上げ・残課題）の棚卸し中。
+実装順序・各フェーズの詳細は [docs/roadmap.md](./docs/roadmap.md)、機能とソースの対応は [docs/feature-map.md](./docs/feature-map.md) を参照。
 
 ## 探索範囲の考え方
 
