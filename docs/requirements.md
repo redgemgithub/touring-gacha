@@ -1,6 +1,6 @@
 # バイク向けランダム目的地Webアプリ 要件定義
 
-> 初期検討段階の要件定義です。実装を進める中で変更され得ます。
+> 実装を進めながら随時更新している要件定義です。現状の実装はPhase 1〜4-Bまで完了しています（進捗はdocs/roadmap.md参照）。
 
 ## 1. 目的
 
@@ -14,8 +14,8 @@
   - Cloudflare Workers
   - Workers Static Assets
 - Workers KVは前提として導入する（Overpass APIのレート制限を吸収するためのキャッシュ用途、無料枠内で運用）
-- D1は必要になった場合のみ追加を検討する
-- 地図・道路データはOpenStreetMap系を利用する想定とする
+- D1は導入しない（ガチャという性質上、永続化・利用者特定は持たせない方針。詳細: docs/decisions/260828-infra-cloudflare-kv.md の追記）
+- 地図・道路データはOpenStreetMap系を利用する（Overpass API直接利用）
 
 ## 3. 基本条件
 
@@ -107,11 +107,12 @@
 
 ## 9. 未確定事項・今後詰める点
 
-- OSMデータの取得方法（Overpass APIを直接叩くか、別の手段を検討するか。無料枠内で収まることを選定基準にする）
-- D1導入の要否・タイミング（KVは導入確定。詳細は docs/decisions/260828-infra-cloudflare-kv.md 参照）
-- プロジェクト名の最終確定（現在の仮称: `touring-gacha`）
+（2026-08-30時点ですべて確定済み。決定済み欄を参照）
 
 決定済み（詳細は docs/decisions/260828-infra-cloudflare-kv.md 参照）:
 - フロントエンドのビルド有無 → バンドラーなし
 - Workers側のルーティングライブラリ → Hono採用
 - 地図表示ライブラリ → MapLibre GL JS、タイル提供元 → MapTiler無料プラン
+- OSMデータの取得方法 → Overpass API直接利用（`src/lib/overpass.ts`）
+- D1導入の要否 → 不採用に確定（ガチャという性質上、永続化・利用者特定は持たせない方針。詳細は docs/decisions/260828-infra-cloudflare-kv.md の追記参照）
+- プロジェクト名 → `touring-gacha`のまま確定（変更する意義がないため仮称から正式名称へ）

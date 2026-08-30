@@ -21,6 +21,9 @@
 | 「店以外」の探索ロジック（峠/展望/山頂のタグ検索） | `src/lib/overpass.ts`（`CATEGORY_TAG_FILTERS.other`） | 済 | Phase 4-A |
 | 交差点の探索ロジック（道路網の次数計算、仮地点・プローブ/拡張クエリ組み立て） | `src/lib/intersection.ts` | 済 | Phase 4-B、[decision](./decisions/260830-phase4b交差点検出実装.md) |
 | 仮地点計算（起点・方角・距離→到達点） | `src/lib/geo.ts`（`destinationPoint`） | 済 | Phase 4-B |
+| 交差点候補のキャッシュ（仮地点自身の座標でバケット化、帯フィルタは取得後に都度適用） | `src/lib/cache.ts`（`buildIntersectionCacheKey`） | 済 | Phase 4-B後の修正。現在地ベースのキャッシュだと仮地点の乱数決定が共有され毎回似た結果になる不具合があった（[decision](./decisions/260830-phase4b交差点検出実装.md)の追記） |
+| 仮地点が完全な空振り（海上等）だった場合の内部リトライ（最大2回） | `src/routes/destinations.ts`、`src/lib/intersection.ts`（`INTERSECTION_MAX_ANCHOR_ATTEMPTS`） | 済 | Phase 4-B後の修正。仮地点の方角決定が陸海を考慮しておらず、海沿いの起点で空振りが頻発する問題への対応 |
+| 周辺情報が500mで0件のとき1kmへ1回だけ拡張検索 | `src/lib/nearby.ts`（`NEARBY_ESCALATE_RADIUS_M`）、`src/routes/nearby.ts` | 済 | Phase 4-B後の修正（全カテゴリ共通） |
 | Overpass応答の検証・エラー処理（remark検知含む） | `src/lib/overpass.ts`（`parseOverpassResponse`） | 済 | Phase 1で実装、Phase 2でサーバー側fetch実行部分を廃止し検証ロジックのみ残す形に整理 |
 | 高速道路100m除外（点と線分の距離計算） | `src/lib/highway-filter.ts`, `src/lib/geo.ts`（`distanceToSegmentMeters`/`distanceToPolylineMeters`） | 済 | Phase 1（Phase 4-Aの「店以外」・Phase 4-Bの交差点でも共通利用） |
 | 停車できる場所の条件判定（駐車場データが1km以内にない候補は除外） | `src/lib/parking-filter.ts` | 済 | Phase 4-A、[decision](./decisions/260829-phase4a-店以外タグ地点と停車場所.md) |
@@ -45,6 +48,7 @@
 | 条件設定画面（GPS・探索範囲・目的地種類「スポット(店)/スポット(店以外)/交差点」・店の種類選択） | `public/js/views/condition.js` | 済 | Phase 1、Phase 4-Aで「店以外」トグル、Phase 4-Bで「交差点」を追加し3択に拡張 |
 | 停車できる場所の条件UI | `public/js/views/condition.js` | 済 | Phase 4-A（交差点には設けない） |
 | 結果地図画面（下部シート、目的地情報タップでコピー/再抽選ボタン） | `public/js/views/result.js` | 済 | Phase 1、Phase 3で周辺情報表示・Phase 3.xでコピー処理を拡張、2026-08-29に「決める」ボタン撤去・下部シート再構成（[decision](./decisions/260829-decide-button-removal.md)） |
+| 見つからない・エラー時にその場で再検索できるボタン | `public/js/views/result.js`（`#retry-button`） | 済 | Phase 4-B後の修正。画面遷移を強制していたのが動線として分かりにくいという指摘への対応 |
 | 地図描画（MapLibre初期化、ピン、破線ルート、POIマーカー、フォーカスリング） | `public/js/components/map.js` | 済 | Phase 1、Phase 3で拡張 |
 | 周辺情報展開画面（POI一覧・地図フォーカス連動） | `public/js/views/result.js`（`sheet-expanded`部分）, `public/js/nearby.js` | 済 | Phase 3、Phase 4-Aで駐車場ワイド検索（停車場所条件との整合性）を追加 |
 | コピー項目設定（アプリ共通、緯度経度/名称/住所のチェックボックス） | `public/js/views/copy-modal.js`, `public/js/copy-preference.js` | 済 | Phase 1で「実行用モーダル」として新設、[decision](./decisions/260829-copy-preference.md)で「設定編集用」に役割変更 |
