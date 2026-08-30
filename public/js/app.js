@@ -13,6 +13,7 @@ const store = createStore({
   lastShopCategory: "food_rest",
   parkingRequired: false,
   mapTilerApiKey: null,
+  mapTilerApiKeyError: false,
   searching: false,
   searchError: null,
   picked: null,
@@ -41,5 +42,7 @@ initCopyModal();
 getConfig()
   .then((config) => store.setState({ mapTilerApiKey: config.mapTilerApiKey }))
   .catch(() => {
-    // 地図タイルキーが取得できなくても条件設定画面自体は使えるようにする
+    // 地図タイルキーが取得できなくても条件設定画面自体は使えるようにする。
+    // 結果画面に進んだ際、地図が無言で空白のままにならないよう理由を表示する
+    store.setState({ mapTilerApiKeyError: true });
   });

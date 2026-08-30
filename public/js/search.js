@@ -1,4 +1,4 @@
-import { prepareSearch, fetchOverpassDirect, processSearch } from "./api.js";
+import { prepareSearch, fetchOverpassDirect, processSearch, describeApiError } from "./api.js";
 
 export async function performSearch(store, { isReroll = false } = {}) {
   const state = store.getState();
@@ -66,10 +66,7 @@ export async function performSearch(store, { isReroll = false } = {}) {
       searchError: {
         status: err.status,
         retryAfter: err.retryAfter,
-        message:
-          err.status === 503
-            ? "混み合っています。しばらくしてからお試しください。"
-            : "検索に失敗しました。もう一度お試しください。",
+        message: describeApiError(err),
       },
     });
   }

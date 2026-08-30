@@ -1,4 +1,4 @@
-import { prepareNearby, processNearby, fetchOverpassDirect } from "./api.js";
+import { prepareNearby, processNearby, fetchOverpassDirect, describeApiError } from "./api.js";
 
 export async function loadNearbyPois(store) {
   const state = store.getState();
@@ -43,7 +43,7 @@ export async function loadNearbyPois(store) {
     console.error("loadNearbyPois error:", err);
     store.setState({
       nearbyLoading: false,
-      nearbyError: { message: "周辺情報を取得できませんでした。" },
+      nearbyError: { message: describeApiError(err) },
     });
   }
 }

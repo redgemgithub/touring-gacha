@@ -5,6 +5,16 @@ function makeApiError(res, body) {
   return err;
 }
 
+// 同じ系統のエラーには同じ文言を使う（利用者は開発者ではないので、
+// 「今使えない」ことが分かれば十分という前提で簡潔にする）。
+// 目的地検索・周辺情報検索など、Overpass/APIエラーを扱うすべての箇所で共通利用する。
+export function describeApiError(err) {
+  if (err?.status === 503) {
+    return "混み合っています。しばらくしてからお試しください。";
+  }
+  return "取得できませんでした。もう一度お試しください。";
+}
+
 export async function getConfig() {
   const res = await fetch("/api/config");
   if (!res.ok) throw new Error("config_fetch_failed");

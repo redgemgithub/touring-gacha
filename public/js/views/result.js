@@ -17,13 +17,17 @@ import { attachLongPress } from "../long-press.js";
 
 async function copyItem(item, { forceLatLon = false } = {}) {
   const text = forceLatLon ? `${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}` : formatCopyText(item);
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      showToast(forceLatLon ? "緯度経度をコピーしました" : "コピーしました");
-    } catch {
-      // クリップボードへのアクセスが拒否された場合等は何もしない
-    }
+  // コピーの成否に関わらず必ず何かしらフィードバックを出す（利用者からは、
+  // タップしても何も起きなかったのか失敗したのか区別がつかないと困るため）。
+  if (!navigator.clipboard?.writeText) {
+    showToast("コピーできませんでした");
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(forceLatLon ? "緯度経度をコピーしました" : "コピーしました");
+  } catch {
+    showToast("コピーできませんでした");
   }
 }
 
@@ -77,6 +81,7 @@ function buildNearbyItemElement({ name, subtitle, icon, active, extraClass }) {
 
 export function initResultView(store) {
   const radiusLabel = document.getElementById("radius-label");
+  const mapErrorEl = document.getElementById("map-error");
   const statusEl = document.getElementById("result-status");
   const statusTextEl = document.getElementById("result-status-text");
   const retryButton = document.getElementById("retry-button");
@@ -243,6 +248,7 @@ export function initResultView(store) {
     const band = computeDistanceBand(state.radiusKm);
     radiusLabel.textContent = `探索範囲 ${band.innerKm.toFixed(0)}〜${band.outerKm.toFixed(0)}km`;
     ensureMap(state);
+    mapErrorEl.hidden = !state.mapTilerApiKeyError;
 
     if (state.searching) {
       statusEl.hidden = false;
