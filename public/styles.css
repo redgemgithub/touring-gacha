@@ -57,6 +57,14 @@ body {
   flex-shrink: 0;
 }
 
+.location-icon.ok {
+  background: var(--focus-ring);
+}
+
+.location-icon.error {
+  background: #e05252;
+}
+
 .location-info .label {
   color: var(--text-muted);
   font-size: 0.8rem;

@@ -6,6 +6,7 @@ const RADIUS_STEPS = [10, 30, 50, 100];
 export function initConditionView(store) {
   const statusEl = document.getElementById("location-status");
   const coordsEl = document.getElementById("location-coords");
+  const locationIconEl = document.getElementById("location-icon");
   const searchButton = document.getElementById("search-button");
   const errorEl = document.getElementById("condition-error");
   const radiusChips = document.getElementById("radius-chips");
@@ -97,12 +98,14 @@ export function initConditionView(store) {
       statusEl.textContent = "取得済み";
       coordsEl.textContent = `${location.lat.toFixed(3)}, ${location.lon.toFixed(3)}`;
       searchButton.disabled = false;
+      locationIconEl.classList.add("ok");
     })
     .catch(() => {
       statusEl.textContent = "取得できませんでした";
       errorEl.hidden = false;
       errorEl.textContent =
         "現在地を取得できませんでした。ブラウザの位置情報許可を確認してください。";
+      locationIconEl.classList.add("error");
     });
 
   const initialState = store.getState();

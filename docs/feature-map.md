@@ -47,6 +47,7 @@
 | 現在地取得・距離／方角の表示整形（クライアント側） | `public/js/geo.js` | 済 | Phase 1 |
 | 条件設定画面（GPS・探索範囲・目的地種類「スポット(店)/スポット(店以外)/交差点」・店の種類選択） | `public/js/views/condition.js` | 済 | Phase 1、Phase 4-Aで「店以外」トグル、Phase 4-Bで「交差点」を追加し3択に拡張 |
 | 停車できる場所の条件UI | `public/js/views/condition.js` | 済 | Phase 4-A（交差点には設けない） |
+| 現在地取得アイコンの状態色分け（成功=緑／失敗=赤） | `public/js/views/condition.js`、`public/styles.css`（`.location-icon.ok`/`.error`） | 済 | Phase 5棚卸し中の指摘対応 |
 | 結果地図画面（下部シート、目的地情報タップでコピー/再抽選ボタン） | `public/js/views/result.js` | 済 | Phase 1、Phase 3で周辺情報表示・Phase 3.xでコピー処理を拡張、2026-08-29に「決める」ボタン撤去・下部シート再構成（[decision](./decisions/260829-decide-button-removal.md)） |
 | 見つからない・エラー時にその場で再検索できるボタン | `public/js/views/result.js`（`#retry-button`） | 済 | Phase 4-B後の修正。画面遷移を強制していたのが動線として分かりにくいという指摘への対応 |
 | 地図描画（MapLibre初期化、ピン、破線ルート、POIマーカー、フォーカスリング） | `public/js/components/map.js` | 済 | Phase 1、Phase 3で拡張 |
